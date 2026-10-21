@@ -204,9 +204,12 @@ Compras · Más**.
   La app avisa "la lechuga está hace 6 días". Opcionalmente se puede corregir a
   mano el vencimiento de un producto. No se cargan fechas de envase.
 - Marcar "se acabó" lo saca de la heladera y lo pasa a la lista de compras.
-- El alcance (solo heladera, o también alacena y freezer) lo define el builder.
-  Se recomienda un solo inventario con categoría, porque el arroz y los fideos
-  importan para las recetas.
+- **Alcance (decidido):** por ahora hay un solo inventario, que incluye también
+  los productos de alacena (aceite, arroz, fideos, enlatados), porque las
+  recetas los necesitan. La pantalla se llama Heladera. Separar la Alacena es
+  una idea para más adelante (§11). *Mi decisión:* cada producto del
+  diccionario ya guarda si es de heladera o de alacena, para que separarlos
+  después no requiera rehacer datos.
 
 ## 9. Cargar lo comprado
 
@@ -277,6 +280,9 @@ clave propia, guardada en una Edge Function), invitaciones a otros hogares de la
 familia y dieta, solo si se retoma.
 
 **Ideas anotadas para cuando escale:**
+- **Alacena.** Una sección propia para los productos de alacena (aceite, arroz,
+  fideos, enlatados), separada de la heladera. Suelen durar mucho más y se
+  revisan de otra forma.
 - **Alias de ticket por ubicación.** Quienes viven en la misma localidad suelen
   comprar en el mismo súper, y ese súper imprime las mismas abreviaturas. Los
   alias aprendidos se agruparían por localidad o sucursal, en lugar de ser
