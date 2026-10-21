@@ -158,7 +158,10 @@ script en el repo (`scripts/`), y lo que genera se carga en la base:
   sesiones de construcción.
 
 **Básicos asumidos (mi decisión):** sal, pimienta, aceite y agua se consideran
-siempre disponibles. La lista se puede editar por hogar.
+siempre disponibles. La lista se puede editar por hogar. Asumirlos vale **solo
+para elegir recetas**. El aceite, en cambio, sí se sigue en la heladera y en la
+lista de compras: se puede marcar "se acabó" y entra en "lo habitual" (§10).
+La sal y la pimienta también se pueden seguir así si el hogar quiere.
 
 **Recetario propio:** el hogar puede marcar recetas como favoritas y cargar las
 suyas. Las propias y las favoritas tienen prioridad en las sugerencias.
@@ -272,6 +275,13 @@ Cada etapa queda usable por sí sola.
 **Para más adelante, fuera de este diseño:** cantidades, IA paga (Claude API con
 clave propia, guardada en una Edge Function), invitaciones a otros hogares de la
 familia y dieta, solo si se retoma.
+
+**Ideas anotadas para cuando escale:**
+- **Alias de ticket por ubicación.** Quienes viven en la misma localidad suelen
+  comprar en el mismo súper, y ese súper imprime las mismas abreviaturas. Los
+  alias aprendidos se agruparían por localidad o sucursal, en lugar de ser
+  globales. Para eso, el hogar tendría una localidad y el alias guardaría dónde
+  se aprendió.
 
 ## 12. Qué queda a criterio del builder
 
