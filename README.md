@@ -25,7 +25,9 @@ vite.config.js              build settings + PWA manifest and service worker
 supabase/
   schema.sql                the heladera schema, tables and security rules (run once)
   add-household.sql         template to create a household by hand
+  migrations/               dated changes for a database made with an older schema.sql
   tests/                    SQL tests on PGlite (a stub of Supabase auth in supabase-stub.sql)
+scripts/recipes/            builds and loads the recipe book (see "Recetario" below)
 src/
   main.jsx                  starts React, the router and the crash screen
   App.jsx                   login check, household check, routes, offline banner
@@ -74,7 +76,7 @@ generated recipes are **not** in the repo (personal use only).
 ## Tests
 
 `npm test` runs the SQL tests (`npm run test:db`, needs `../zona-fit` next to
-this folder) and the small `src/lib` tests.
+this folder), the `src/lib` tests and the recipe script tests.
 
 ## Good to know
 
