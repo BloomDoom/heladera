@@ -27,3 +27,11 @@ test('ingredientRows maps codes and keys to ids', () => {
     { recipe_id: 5, product_id: 11, line: '4 huevos', is_main: false },
   ])
 })
+
+test('review I4: missingIds lists what would break the load', async () => {
+  const { missingIds } = await import('../load.js')
+  const productIds = new Map([['leche', 10]])
+  const recipeIds = new Map()
+  assert.deepEqual(missingIds([recipe], productIds, recipeIds), ['recipe abuela:1', 'product huevo'])
+  assert.deepEqual(missingIds([recipe], new Map([['leche', 1], ['huevo', 2]]), new Map([['abuela:1', 5]])), [])
+})

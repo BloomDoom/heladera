@@ -65,3 +65,32 @@ test('dictionary is valid', () => {
     assert.equal(products.find((p) => p.code === code)?.assumed, true, code)
   }
 })
+
+test('review I1: generic words inside other foods', () => {
+  assert.deepEqual(match('1 Morrón rojo asado'), ['morron'])
+  assert.deepEqual(match('Ajo y cebolla asados'), ['ajo', 'cebolla'])
+  assert.deepEqual(match('4 lomos de merluza'), ['pescado'])
+  assert.deepEqual(match('2 rodajas de salmón en lomos'), ['salmon'])
+  assert.deepEqual(match('300 g de carne picada de cerdo'), ['cerdo'])
+  assert.deepEqual(match('Carne picada de pechuga de pollo'), ['pollo'])
+  assert.deepEqual(match('150 g de carne vegetal'), ['seitan'])
+  assert.deepEqual(match('1 cucharada de Ajo en pasta'), ['ajo'])
+  assert.deepEqual(match('1 lámina de pasta brisa'), ['masa-de-tarta'])
+  assert.deepEqual(match('1 sobre de consomé de pollo'), ['caldo'])
+  assert.deepEqual(match('1 pastilla de caldo de carne'), ['caldo'])
+  assert.deepEqual(match('1 taza de Fondo de res'), ['caldo'])
+  assert.deepEqual(match('100 g de harina de garbanzos'), ['harina'])
+  assert.deepEqual(match('1 vaso de leche de soja'), ['leche'])
+  assert.deepEqual(match('200 g de espirales de colores'), ['fideos'])
+  assert.deepEqual(match('1 cucharada de salsa de pescado'), ['salsa-de-soja'])
+  assert.deepEqual(match('250 g de pasta'), ['fideos'])
+})
+
+test('review I3: "sin X" is not X', () => {
+  assert.deepEqual(match('Harina de rebozar sin huevo'), ['harina'])
+  assert.deepEqual(match('50 g de manteca sin sal'), ['manteca'])
+})
+
+test('review I1: string for tying meat is ignored', () => {
+  assert.equal(isIgnored('Hilo para bridar la carne', ignore), true)
+})

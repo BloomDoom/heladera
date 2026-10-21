@@ -40,8 +40,10 @@ export function assemble(raw, { dict, words, ignore, vocab }) {
         report.unmatched.set(key, (report.unmatched.get(key) || 0) + 1)
         ok = false
       }
+      // An optional ingredient never decides whether you can cook the dish.
+      const optional = OPTIONAL.test(line)
       for (const code of codes) {
-        const isMain = !byCode.get(code).minor
+        const isMain = !byCode.get(code).minor && !optional
         const seen = ingredients.get(code)
         if (seen) seen.isMain ||= isMain
         else ingredients.set(code, { code, line, isMain })

@@ -19,6 +19,11 @@ const NOISE = new RegExp(
   'g',
 )
 
+// Words that describe a product but would match another one: "morrón
+// asado" isn't beef, "salmón en lomos" isn't beef either, "manteca sin
+// sal" has no salt, "ajo en pasta" isn't fideos.
+const QUALIFIERS = /\b(sin [a-z]+|asad[oa]s?|en lomos?|en pasta|de colores)\b/g
+
 // The line without accents, quantities and units: "2 tazas de Maíz" → "de maiz".
 export const stripNoise = (line) => fold(line).replace(NOISE, ' ').replace(/\s+/g, ' ').trim()
 
@@ -37,7 +42,7 @@ export function prepare(products) {
 
 // Product codes found in the line, in the order they appear, each once.
 export function matchProducts(line, d) {
-  let text = fold(line).replace(NOISE, ' ')
+  let text = fold(line).replace(NOISE, ' ').replace(QUALIFIERS, ' ')
   const found = []
   for (const { code, re } of d.terms) {
     re.lastIndex = 0

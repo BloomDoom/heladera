@@ -29,7 +29,15 @@ export const ingredientRows = (recipes, productIds, recipeIds) =>
     recipe_id: recipeIds.get(r.sourceKey), product_id: productIds.get(i.code), line: i.line, is_main: i.isMain,
   })))
 
-const chunks = (list, size) => Array.from({ length: Math.ceil(list.length / size) }, (_, i) => list.slice(i * size, (i + 1) * size))
+// Recipes or products the database didn't give an id for. Checked before
+// deleting anything, so a bad load stops while the old data is intact.
+export const missingIds = (recipes, productIds, recipeIds) => [
+  ...recipes.filter((r) => !recipeIds.has(r.sourceKey)).map((r) => `recipe ${r.sourceKey}`),
+  ...[...new Set(recipes.flatMap((r) => r.ingredients.map((i) => i.code)))]
+    .filter((code) => !productIds.has(code)).map((code) => `product ${code}`),
+]
+
+const chunks =(list, size) => Array.from({ length: Math.ceil(list.length / size) }, (_, i) => list.slice(i * size, (i + 1) * size))
 
 async function check(query) {
   const { data, error } = await query
@@ -66,6 +74,8 @@ async function main() {
   }
   const base = await readAll(db, 'recipes', 'id, source_key', (q) => q.not('source_key', 'is', null))
   const recipeIds = new Map(base.map((r) => [r.source_key, r.id]))
+  const missing = missingIds(recipes, productIds, recipeIds)
+  if (missing.length) throw new Error(`No id for: ${missing.slice(0, 10).join(', ')} (${missing.length} in all)`)
 
   // Base recipes that the build no longer keeps.
   const keep = new Set(recipes.map((r) => r.sourceKey))
@@ -83,6 +93,8 @@ async function main() {
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((error) => {
     console.error(error)
+    // Recipes may have lost some ingredients halfway: loading again fixes it.
+    console.error('\nThe load did not finish. Run load.js again before using the app.')
     process.exit(1)
   })
 }

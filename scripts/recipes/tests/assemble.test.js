@@ -19,7 +19,7 @@ test('assemble merges repeated products', () => {
   })], opts)
   assert.deepEqual(recipes[0].ingredients, [
     { code: 'cebolla', line: '1 cebolla', isMain: true },
-    { code: 'cebolla-de-verdeo', line: 'cebolla de verdeo picada (opcional)', isMain: true },
+    { code: 'cebolla-de-verdeo', line: 'cebolla de verdeo picada (opcional)', isMain: false },
     { code: 'sal', line: 'sal', isMain: false },
     { code: 'pollo', line: '1 pollo', isMain: true },
   ])
@@ -91,4 +91,9 @@ test('assemble capitalizes titles', () => {
 test('assemble ignores text in parentheses unless nothing else matched', () => {
   const { recipes } = assemble([raw({ ingredients: ['1 pollo (o papas)', '1 cebolla', 'verdura (papas)'] })], opts)
   assert.deepEqual(recipes[0].ingredients.map((i) => i.code), ['pollo', 'cebolla', 'papa'])
+})
+
+test('review I2: known optional ingredients are minor', () => {
+  const { recipes } = assemble([raw({ ingredients: ['1 pollo', '1 cebolla', '2 papas (opcional)'] })], opts)
+  assert.deepEqual(recipes[0].ingredients.map((i) => [i.code, i.isMain]), [['pollo', true], ['cebolla', true], ['papa', false]])
 })
