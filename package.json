@@ -1,0 +1,12 @@
+{
+  "name": "heladera",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test:db": "node --test \"supabase/tests/*.test.js\""
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.11"
+  }
+}
