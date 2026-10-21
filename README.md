@@ -55,6 +55,22 @@ The order matters (see the header of `supabase/schema.sql`):
 Locally: `cp .env.example .env` (same URL and key as zona-fit), `npm install`,
 `npm run dev`. GitHub Pages: same secrets and Pages settings as zona-fit.
 
+## Recetario (recipes and product dictionary)
+
+Built once from three sources, filtered to easy lunch/dinner dishes of an hour
+or less, with every ingredient matched to a product of
+`scripts/recipes/dictionary/products.json` (spec §6). The sources and the
+generated recipes are **not** in the repo (personal use only).
+
+1. Put the sources in `scripts/recipes/sources/` (URLs at the top of `build.js`).
+2. `node scripts/recipes/build.js`: writes `scripts/recipes/out/` and lists the
+   ingredient lines that matched no product. To grow the dictionary, add
+   products/synonyms (`products.json`), Spain → Argentina words (`es-ar.json`)
+   or non-food lines (`ignore.json`), run `npm test` and build again.
+3. `node --env-file=.env.local scripts/recipes/load.js`: loads it into Supabase
+   (needs `SUPABASE_SERVICE_KEY` in `.env.local`, see `.env.example`). Safe to
+   run again.
+
 ## Tests
 
 `npm test` runs the SQL tests (`npm run test:db`, needs `../zona-fit` next to
