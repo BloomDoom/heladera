@@ -128,7 +128,10 @@ chocar con esta migración y habrá que adaptarla.
 script en el repo (`scripts/`), y lo que genera se carga en la base:
 - **Filtrar** a platos que sirvan para almuerzo o cena: plato principal o cena,
   dificultad baja o media, hasta ~60 min. Se espera que queden unos 2.000-3.000.
-  Se descartan postres, salsas sueltas y tragos.
+  Se descartan postres, salsas sueltas y tragos. **No se filtra por país
+  (decidido):** se conservan las recetas de España, México, Perú, etc., por la
+  variedad. Las que llevan ingredientes difíciles de conseguir casi nunca van a
+  salir, porque solo se sugiere lo que se puede hacer con lo que hay.
 - **Arreglar el texto roto.** En el dataset, "maíz" aparece como "maï¿½z".
 - **Normalizar los ingredientes** contra un **diccionario de productos** propio:
   de "½ taza de cilantro finamente picado" queda "cilantro". El diccionario
