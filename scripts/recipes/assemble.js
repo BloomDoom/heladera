@@ -3,6 +3,7 @@ import { fixMojibake } from './mojibake.js'
 
 // Titles that are a sauce, a drink or a dessert, not a dish for dinner.
 const NOT_A_DISH = /^(salsa|aderezo|trago|postre|torta|bud[ií]n|helado)\b/i
+const OPTIONAL = /opcional|\bal? gusto\b/i
 
 // Turns raw recipes into the ones that get loaded: titles and ingredient
 // lines adapted to Argentina, every ingredient matched to a product.
@@ -17,7 +18,8 @@ export function assemble(raw, { dict, words, ignore, vocab }) {
 
   for (const r of raw) {
     const before = fixMojibake.unresolved
-    const title = argentinize(fixMojibake(r.title, vocab), words)
+    const fixed = argentinize(fixMojibake(r.title, vocab), words)
+    const title = fixed[0].toUpperCase() + fixed.slice(1)
     let ok = fixMojibake.unresolved === before && !NOT_A_DISH.test(title)
     if (fixMojibake.unresolved !== before) report.unresolvedMojibake++
 
@@ -25,7 +27,14 @@ export function assemble(raw, { dict, words, ignore, vocab }) {
     for (const original of r.ingredients) {
       if (isIgnored(original, ignore)) continue
       const line = argentinize(fixMojibake(original, vocab), words)
-      const codes = matchProducts(line, d)
+      // "Mayonesa o queso crema": either one will do, so only the first counts.
+      // Text in parentheses is a note ("caldo (de pescado o pollo)"); it only
+      // counts when nothing else matched ("verdura para caldo (zanahoria…)").
+      const first = line.replace(/\([^)]*\)?/g, ' ').split(/\s+o\s+/i)[0]
+      const firstCodes = matchProducts(first, d)
+      const codes = firstCodes.length ? firstCodes : matchProducts(line, d)
+      // An optional ingredient nobody knows doesn't stop you from cooking it.
+      if (!codes.length && OPTIONAL.test(line)) continue
       if (!codes.length) {
         const key = stripNoise(line)
         report.unmatched.set(key, (report.unmatched.get(key) || 0) + 1)

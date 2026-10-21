@@ -1,0 +1,16 @@
+{
+  "peregrinogris": [
+    "albondigas", "carre-relleno", "curry-papa-espinaca", "ensalada-cesar", "escabeche-pollo",
+    "filete-merluza-puerro", "filete-merluza-vino-blanco", "gnocchi-papa", "guiso-cerdo-arroz",
+    "guiso-lentejas", "gyudon", "locro", "parmigiana-zucchini", "pollo-tres-aromas",
+    "tarta-berenjena-zapallito"
+  ],
+  "peluso": [
+    "Bibim guksu", "Cacio e pepe infalible", "Couscous express con verduras", "Curry rojo de verduras",
+    "Enchiladas norteñas", "Ensaladilla rusa", "Fideos fritos chinos con verduras", "Gazpacho",
+    "Guiso de lentejas", "Linguine al limón", "Mapo tofu", "Migas de sémola", "Mujadara",
+    "No pollo al curry", "Noodles instantáneos con salsa de crema de cacahuete", "Pasta a la puttanesca",
+    "Pisto", "Poke", "Ragú vegano a la boloñesa", "Risotto a la Milanesa", "Risotto al vino tinto",
+    "Risotto de calabaza", "Spaghetti a la carbonara de setas", "Tagliatelle ai funghi", "Tortilla de patatas"
+  ]
+}

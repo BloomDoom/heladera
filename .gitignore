@@ -11,3 +11,7 @@ Thumbs.db
 
 # Plan workspace (superpowers)
 .superpowers/
+
+# Recipe sources and build output (personal use only, never committed)
+scripts/recipes/sources/
+scripts/recipes/out/

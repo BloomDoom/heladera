@@ -69,3 +69,26 @@ test('assemble repairs broken accents and drops titles it cannot repair', () => 
   const bad = assemble([raw({ title: `Pollo zzz${broken}` })], { ...opts, vocab })
   assert.equal(bad.recipes.length, 0)
 })
+
+test('assemble skips unknown optional ingredients', () => {
+  const { recipes, report } = assemble([raw({
+    ingredients: ['1 pollo', '1 cebolla', '1 pizca de glutamato (opcional)', 'Croutones, a gusto', 'salsa al gusto'],
+  })], opts)
+  assert.equal(recipes.length, 1)
+  assert.equal(recipes[0].ingredients.length, 2)
+  assert.equal(report.unmatched.size, 0)
+})
+
+test('assemble takes only the first of alternatives', () => {
+  const { recipes } = assemble([raw({ ingredients: ['1 pollo', '1 cebolla o 2 papas', 'papas o cebolla de verdeo'] })], opts)
+  assert.deepEqual(recipes[0].ingredients.map((i) => i.code), ['pollo', 'cebolla', 'papa'])
+})
+
+test('assemble capitalizes titles', () => {
+  assert.equal(assemble([raw({ title: 'pure de papas con pollo' })], opts).recipes[0].title, 'Pure de papas con pollo')
+})
+
+test('assemble ignores text in parentheses unless nothing else matched', () => {
+  const { recipes } = assemble([raw({ ingredients: ['1 pollo (o papas)', '1 cebolla', 'verdura (papas)'] })], opts)
+  assert.deepEqual(recipes[0].ingredients.map((i) => i.code), ['pollo', 'cebolla', 'papa'])
+})
