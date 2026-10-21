@@ -19,6 +19,9 @@ const NOISE = new RegExp(
   'g',
 )
 
+// The line without accents, quantities and units: "2 tazas de Maíz" → "de maiz".
+export const stripNoise = (line) => fold(line).replace(NOISE, ' ').replace(/\s+/g, ' ').trim()
+
 // Builds the matcher: every name and synonym, longest first, so "harina de
 // maíz" wins over "maíz". A plural "s"/"es" at the end also matches.
 export function prepare(products) {
