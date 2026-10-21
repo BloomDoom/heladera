@@ -19,3 +19,6 @@ $$;
 
 grant usage on schema auth to anon, authenticated;
 grant execute on function auth.uid() to anon, authenticated;
+
+-- Supabase's server-side role (the secret key). It skips Row Level Security.
+create role service_role nologin bypassrls;
