@@ -263,3 +263,8 @@ input:focus-visible {
     --border: #6b6b76;
   }
 }
+
+/* Below "Probar de nuevo" when the household could not be loaded. */
+.logout-after-error {
+  margin-top: 1rem;
+}

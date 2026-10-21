@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { isConfigured, supabase } from './lib/supabase.js'
+import { isConfigured, signOut, supabase } from './lib/supabase.js'
 import { useOnline } from './lib/useOnline.js'
 import { useLoad } from './lib/useLoad.js'
 import { loadHousehold } from './lib/household.js'
@@ -64,7 +64,17 @@ function LoggedIn({ userId }) {
   const household = useLoad(loadHousehold, [userId])
 
   if (household.loading || household.error) {
-    return <main className="screen center"><LoadState {...household} /></main>
+    return (
+      <main className="screen center">
+        <LoadState {...household} />
+        {/* If it keeps failing, there must be a way out of this screen. */}
+        {household.error && (
+          <button className="btn-secondary logout-after-error" onClick={signOut}>
+            Cerrar sesión
+          </button>
+        )}
+      </main>
+    )
   }
   if (!household.data) return <NoHousehold />
 

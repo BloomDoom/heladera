@@ -74,3 +74,11 @@ test('add-household template fails safely with placeholders', async () => {
   await db.exec('rollback')
   assert.equal((await db.query('select count(*)::int as n from heladera.households')).rows[0].n, 2)
 })
+
+test('undo and redo the zona-fit migration keeps heladera logins out', async () => {
+  const { db, u } = await setup()
+  await db.exec(sql(ZONA_FIT + '/migrations/2026-10-21-gym-users-rollback.sql'))
+  await db.exec(sql(ZONA_FIT + '/migrations/2026-10-21-gym-users.sql'))
+  assert.equal(await count(db, u.a1, 'public.members'), 0)
+  assert.equal(await count(db, u.nadia, 'public.members'), 1)
+})
