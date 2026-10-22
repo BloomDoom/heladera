@@ -57,12 +57,13 @@ function matchesWords(text, words) {
 }
 
 // Products matching the query: name starts first, other names, then synonyms.
-export function searchProducts(products, query) {
+// Agua is left out unless `includeHidden` is true.
+export function searchProducts(products, query, { includeHidden = false } = {}) {
   const q = normalizeText(query)
   if (!q) return []
   const words = q.split(' ')
   const ranked = []
-  for (const product of shown(products)) {
+  for (const product of includeHidden ? products : shown(products)) {
     const name = normalizeText(product.name)
     let rank = null
     if (matchesWords(name, words)) rank = name.startsWith(q) ? 0 : 1

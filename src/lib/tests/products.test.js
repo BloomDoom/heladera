@@ -67,6 +67,10 @@ test('searchProducts never shows agua', () => {
   assert.deepEqual(searchProducts([agua], 'agua'), [])
 })
 
+test('searchProducts can include hidden products', () => {
+  assert.deepEqual(searchProducts([agua], 'agua', { includeHidden: true }), [agua])
+})
+
 test('findByName matches ignoring accents, case and spaces', () => {
   const all = [leche, limon, carne]
   assert.equal(findByName(all, ' leche '), leche)
