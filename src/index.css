@@ -492,3 +492,54 @@ select {
 .new-product-cancel {
   margin-top: 0.75rem;
 }
+
+/* ───────── Hoy */
+.suggestion-card {
+  padding: 1.25rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  touch-action: pan-y; /* vertical scroll still works; horizontal drags are ours */
+  user-select: none;
+  -webkit-user-select: none;
+}
+.suggestion-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+}
+.suggestion-card p {
+  margin: 0 0 0.5rem;
+}
+.suggestion-actions {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+.suggestion-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--border);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.suggestion-btn-ok {
+  background: var(--primary);
+  color: var(--primary-text);
+  border-color: var(--primary);
+}
+.today-add {
+  margin-top: 1rem;
+}
+.empty .link-button {
+  display: inline-flex;
+  align-items: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .suggestion-card {
+    transition: none !important;
+  }
+}

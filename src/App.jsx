@@ -82,7 +82,7 @@ function LoggedIn({ userId }) {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Today />} />
+        <Route path="/" element={<Today household={household.data} />} />
         <Route path="/fridge" element={<Fridge household={household.data} />} />
         <Route path="/fridge/add" element={<AddToFridge household={household.data} />} />
         <Route path="/shopping" element={<Shopping />} />
