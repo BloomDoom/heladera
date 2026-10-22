@@ -92,7 +92,7 @@ test('migration matches schema.sql', async () => {
     policies: (await db.query(`select tablename, policyname, cmd, qual from pg_policies
       where schemaname = 'heladera' order by 1, 2`)).rows,
   })
-  const full = await newDb(ZONA_FIT + '/schema.sql', 'supabase/schema.sql')
+  const full = await newDb(ZONA_FIT + '/schema.sql', 'supabase/tests/fixtures/heladera-schema-stage2a.sql')
   const migrated = await newDb(ZONA_FIT + '/schema.sql', 'supabase/tests/fixtures/heladera-schema-stage1.sql',
     'supabase/migrations/2026-10-22-recetario.sql')
   assert.deepEqual(await shape(migrated), await shape(full))
