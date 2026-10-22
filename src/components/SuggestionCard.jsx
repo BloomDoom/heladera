@@ -34,7 +34,7 @@ export default function SuggestionCard({ suggestion, onSkip, onOpen }) {
   }
 
   function onPointerDown(e) {
-    if (done.current) return
+    if (done.current || !e.isPrimary || e.button !== 0) return
     start.current = { x: e.clientX, y: e.clientY }
     setDragging(true)
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -67,7 +67,7 @@ export default function SuggestionCard({ suggestion, onSkip, onOpen }) {
   const style = {
     transform: `translateX(${dx}px) rotate(${dx / 30}deg)`,
     // No transition while the finger is down, so the card follows it.
-    transition: dragging ? 'none' : `transform ${EXIT_MS}ms ease-out`,
+    transition: dragging ? 'none' : `transform ${EXIT_MS}ms ease-out, opacity ${EXIT_MS}ms ease-out`,
     opacity: leaving ? 0 : 1,
   }
 
