@@ -68,6 +68,11 @@ export function rankSuggestions({ candidates, items, cooked, rejections, today }
       reasons.push(urgencyText(soonest.name, soonest.daysLeft))
     }
 
+    if (c.own || c.favorite) {
+      score += 2
+      reasons.push(c.own ? 'Es una receta de ustedes' : 'Es una de sus favoritas')
+    }
+
     const cookedDays = cookedAgo.get(c.recipe_id) ?? null
     if (cookedDays === null || cookedDays >= 14) {
       score += 2

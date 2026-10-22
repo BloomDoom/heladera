@@ -106,3 +106,18 @@ test('a missing product without a name still says something', () => {
   const a = cand(1, [], { missing_product_id: 9, missing_product_name: null })
   assert.equal(rank({ candidates: [a] })[0].missing, 'Falta algo')
 })
+
+test('favorites and own recipes go up', () => {
+  const fav = rank({ candidates: [cand(2), cand(1, [], { favorite: true })] })
+  assert.deepEqual(ids(fav), [1, 2])
+  assert.deepEqual(fav[0].reasons, ['Es una de sus favoritas', 'No lo cocinan hace meses'])
+  assert.equal(fav[0].score, 4)
+
+  const own = rank({ candidates: [cand(2), cand(1, [], { own: true })] })
+  assert.deepEqual(ids(own), [1, 2])
+  assert.deepEqual(own[0].reasons, ['Es una receta de ustedes', 'No lo cocinan hace meses'])
+
+  const both = rank({ candidates: [cand(1, [], { own: true, favorite: true })] })
+  assert.deepEqual(both[0].reasons, ['Es una receta de ustedes', 'No lo cocinan hace meses'])
+  assert.equal(both[0].score, 4)
+})

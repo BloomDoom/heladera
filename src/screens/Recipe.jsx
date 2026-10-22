@@ -1,10 +1,12 @@
-import { useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLoad } from '../lib/useLoad.js'
 import { loadRecipePage, markCooked, undoCooked } from '../lib/today.js'
+import { setFavorite, deleteOwnRecipe } from '../lib/recipes.js'
 import { finishItem, restoreItem } from '../lib/fridge.js'
 import { todayISO } from '../lib/format.js'
 import { recipeSteps } from '../lib/steps.js'
+import { readOwnSteps } from '../lib/ownRecipe.js'
 import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
 import LoadState from '../components/LoadState.jsx'
@@ -22,7 +24,67 @@ export default function Recipe({ household }) {
   const sending = useRef(false) // blocks a second tap before React re-renders
   const finishing = useRef(false) // same, for "Listo" / "Nada se acabó"
 
+  // null until the first tap: until then the loaded value is shown.
+  const [localFavorite, setLocalFavorite] = useState(null)
+  const togglingFavorite = useRef(false) // blocks a tap while the last one is saving
+
+  // Own recipes: the delete button is armed by a first tap, for 4 seconds.
+  const [armed, setArmed] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const armTimer = useRef(null)
+  const removing = useRef(false)
+  useEffect(() => () => clearTimeout(armTimer.current), [])
+
   const { recipe, items, assumedIds } = load.data ?? {}
+  const favorite = localFavorite ?? load.data?.favorite ?? false
+
+  // Optimistic: flips the star at once and puts it back if saving fails.
+  async function toggleFavorite() {
+    if (togglingFavorite.current) return
+    togglingFavorite.current = true
+    const next = !favorite
+    setLocalFavorite(next)
+    try {
+      await setFavorite(household.id, recipe.id, next)
+      if (next) showToast('Guardada en favoritas')
+    } catch (error) {
+      // Already a favorite from another device: that is what was asked for.
+      if (next && error?.code === '23505') {
+        showToast('Guardada en favoritas')
+      } else {
+        setLocalFavorite(!next)
+        showToast(saveErrorMessage(error))
+      }
+    } finally {
+      togglingFavorite.current = false
+    }
+  }
+
+  // Deleting also removes the history and the favorite, so there is no Undo:
+  // it asks for a second tap instead.
+  async function removeRecipe() {
+    if (removing.current) return
+    if (!armed) {
+      setArmed(true)
+      clearTimeout(armTimer.current)
+      armTimer.current = setTimeout(() => setArmed(false), 4000)
+      return
+    }
+    removing.current = true
+    clearTimeout(armTimer.current)
+    setDeleting(true)
+    try {
+      await deleteOwnRecipe(recipe.id)
+    } catch (error) {
+      showToast(saveErrorMessage(error))
+      removing.current = false
+      setDeleting(false)
+      setArmed(false)
+      return
+    }
+    navigate('/', { replace: true })
+    showToast('Receta borrada')
+  }
 
   // The recipe's products that are in the fridge, in recipe order, once each.
   function fridgeItemsOfRecipe() {
@@ -92,7 +154,7 @@ export default function Recipe({ household }) {
     })
   }
 
-  const steps = recipe ? recipeSteps(recipe.steps) : []
+  const steps = recipe ? (recipe.household_id != null ? readOwnSteps(recipe.steps) : recipeSteps(recipe.steps)) : []
   const main = recipe ? recipe.ingredients.filter((i) => i.is_main) : []
   const minor = recipe ? recipe.ingredients.filter((i) => !i.is_main) : []
   const isMissing = (ing) =>
@@ -119,7 +181,25 @@ export default function Recipe({ household }) {
       <LoadState {...load} />
       {recipe && (
         <>
-          <h1>{recipe.title}</h1>
+          <div className="recipe-title">
+            <h1>{recipe.title}</h1>
+            <button
+              className="favorite-btn"
+              aria-pressed={favorite}
+              aria-label="Favorita"
+              onClick={toggleFavorite}
+            >
+              <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                <path
+                  d="M12 2.5l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.7l-6.1 3.4 1.4-6.8L2.2 9.6l6.9-.8z"
+                  fill={favorite ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
           {(recipe.minutes > 0 || recipe.servings > 0) && (
             <p className="muted recipe-meta">
               {[
@@ -162,6 +242,16 @@ export default function Recipe({ household }) {
                 recipe.source
               )}
             </p>
+          )}
+          {recipe.household_id != null && (
+            <div className="own-actions">
+              <Link className="btn-secondary btn-link" to={`/recipe/${recipe.id}/edit`}>
+                Editar
+              </Link>
+              <button className="btn-secondary btn-danger" disabled={deleting} onClick={removeRecipe}>
+                {armed ? 'Tocá de nuevo para borrar' : 'Borrar receta'}
+              </button>
+            </div>
           )}
           <div className="add-bar">
             <button className="btn-primary" disabled={saving || cookedId !== null} onClick={cook}>

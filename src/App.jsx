@@ -10,6 +10,7 @@ import Login from './screens/Login.jsx'
 import NoHousehold from './screens/NoHousehold.jsx'
 import Today from './screens/Today.jsx'
 import Recipe from './screens/Recipe.jsx'
+import RecipeForm from './screens/RecipeForm.jsx'
 import SearchRecipes from './screens/SearchRecipes.jsx'
 import Fridge from './screens/Fridge.jsx'
 import AddToFridge from './screens/AddToFridge.jsx'
@@ -85,6 +86,8 @@ function LoggedIn({ userId }) {
     <>
       <Routes>
         <Route path="/" element={<Today household={household.data} />} />
+        <Route path="/recipes/new" element={<RecipeForm household={household.data} />} />
+        <Route path="/recipe/:id/edit" element={<RecipeForm household={household.data} />} />
         <Route path="/recipe/:id" element={<Recipe household={household.data} />} />
         <Route path="/search" element={<SearchRecipes />} />
         <Route path="/fridge" element={<Fridge household={household.data} />} />
