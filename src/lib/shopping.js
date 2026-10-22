@@ -2,6 +2,7 @@ import { supabase } from './supabase.js'
 import { unwrap } from './useLoad.js'
 import { addDays } from './format.js'
 
+let channelCount = 0 // every subscription needs its own channel topic
 const ALREADY_THERE = '23505' // Postgres: unique violation (the product is already on the list)
 
 // Everything the shopping list needs, loaded in parallel: the list itself,
@@ -83,11 +84,17 @@ export async function checkHabit(householdId, productId, today) {
 
 // "Hoy no": hides a habitual product for now.
 export async function snooze(householdId, productId, today) {
-  return unwrap(
-    supabase
-      .from('shopping_snoozes')
-      .upsert({ household_id: householdId, product_id: productId, snoozed_on: today }),
-  )
+  try {
+    await unwrap(
+      supabase
+        .from('shopping_snoozes')
+        .insert({ household_id: householdId, product_id: productId, snoozed_on: today }),
+    )
+  } catch (error) {
+    if (error.code !== ALREADY_THERE) throw error
+    // Already snoozed: only snoozed_on may be updated, so renew it.
+    await unwrap(supabase.from('shopping_snoozes').update({ snoozed_on: today }).eq('product_id', productId))
+  }
 }
 
 export async function unsnooze(productId) {
@@ -119,7 +126,7 @@ export async function loadWeek(today) {
 // Returns the function that stops listening.
 export function subscribeShopping(householdId, onChange) {
   const channel = supabase
-    .channel(`shopping-${householdId}`)
+    .channel(`shopping-${householdId}-${++channelCount}`)
     .on(
       'postgres_changes',
       { event: '*', schema: 'heladera', table: 'shopping_items', filter: `household_id=eq.${householdId}` },

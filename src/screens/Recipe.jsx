@@ -128,12 +128,13 @@ export default function Recipe({ household }) {
     if (finishing.current) return
     finishing.current = true
     setSaving(true)
+    const today = todayISO()
     const finished = []
     const listedIds = [] // finished items that went onto the shopping list
     let failed = false
     for (const item of chosen) {
       try {
-        const listed = await finishItem(item.product_id, todayISO())
+        const listed = await finishItem(item.product_id, today)
         finished.push(item)
         if (listed) listedIds.push(item.product_id)
       } catch (error) {

@@ -148,6 +148,24 @@ test('snoozes are per household', async () => {
   assert.equal((await rows(db, u.b1, 'select * from heladera.shopping_snoozes')).length, 0)
 })
 
+test('a snooze can be renewed', async () => {
+  const { db, u, ids } = await setup()
+  await as(
+    db,
+    u.a1,
+    `insert into heladera.shopping_snoozes (household_id, product_id, snoozed_on) values (1, $1, '2026-10-26')`,
+    [ids.leche],
+  )
+  await as(
+    db,
+    u.a1,
+    `update heladera.shopping_snoozes set snoozed_on = '2026-10-27' where product_id = $1`,
+    [ids.leche],
+  )
+  const [row] = await rows(db, u.a1, 'select snoozed_on::text as d from heladera.shopping_snoozes')
+  assert.equal(row.d, '2026-10-27')
+})
+
 test('anon reads nothing', async () => {
   const { db } = await setup()
   await assert.rejects(as(db, null, 'select * from heladera.shopping_items'), /permission denied/)
