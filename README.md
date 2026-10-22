@@ -35,9 +35,12 @@ src/
   lib/
     supabase.js, auth.js    the client (schema heladera, own login key, local logout)
     household.js            the logged-in user's household and members
+    format.js, freshness.js dates and plurals; how fresh a fridge item is
+    products.js, fridge.js  product search and shop groups; fridge, purchases and new products
     useLoad.js, errors.js, useOnline.js, asset.js   copied from zona-fit
-  components/               TabBar, LoadState, ErrorBoundary
-  screens/                  Login, Today (Hoy), Fridge, Shopping, More, NoHousehold
+  components/               TabBar, LoadState, ErrorBoundary, Toast, BackButton,
+                            FridgeItem, NewProductForm
+  screens/                  Login, Today (Hoy), Fridge, AddToFridge, Shopping, More, NoHousehold
 public/                     icons
 .github/workflows/          deploy to GitHub Pages
 ```
@@ -48,7 +51,9 @@ The order matters (see the header of `supabase/schema.sql`):
 
 1. zona-fit's `supabase/migrations/2026-10-21-gym-users.sql` has run, and zona-fit
    still works for its users.
-2. Supabase → SQL Editor: run `supabase/schema.sql`.
+2. Supabase → SQL Editor: run `supabase/schema.sql`. On a database made with an
+   older `schema.sql`, run the dated files of `supabase/migrations/` instead, in
+   order: `2026-10-22-recetario.sql`, then `2026-10-23-inventario.sql`.
 3. Project Settings → Data API → Exposed schemas: add `heladera`.
 4. Authentication → Add user (Auto Confirm User) for each person, unless they
    use an existing login. A Heladera login must not be in zona-fit's `gym_users`.
