@@ -30,7 +30,10 @@ export default function Shopping({ household }) {
     const today = todayISO()
     return { today, ...(await loadShopping(today)) }
   }, [])
-  const today = load.data?.today
+  // A reload that fails keeps the last good data on screen, with a toast.
+  const [good, setGood] = useState(null)
+  const data = load.data ?? good
+  const today = data?.today
 
   // Local copy of what can change on this screen; reset on every (re)load.
   const [rows, setRows] = useState([])
@@ -43,7 +46,12 @@ export default function Shopping({ household }) {
     setRows(load.data.rows)
     setSnoozes(load.data.snoozes)
     setProducts(load.data.products)
+    setGood(load.data)
   }, [load.data])
+  useEffect(() => {
+    if (load.error && good) showToast(saveErrorMessage(load.error))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [load.error])
 
   // A remote change while one of our saves is in flight only marks a reload
   // as pending; it happens once the saves settle.
@@ -51,10 +59,16 @@ export default function Shopping({ household }) {
   const pending = useRef(false)
   const reloadRef = useRef(load.reload)
   reloadRef.current = load.reload
+  const timer = useRef(null)
+  // Waits a little: a burst of events (often this phone's own writes) reloads once.
   function reloadSoon() {
-    if (inflight.current > 0) pending.current = true
-    else reloadRef.current()
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => {
+      if (inflight.current > 0) pending.current = true
+      else reloadRef.current()
+    }, 300)
   }
+  useEffect(() => () => clearTimeout(timer.current), [])
   const loadingRef = useRef(load.loading)
   loadingRef.current = load.loading
   const chains = useRef(new Map()) // product id -> last write, so writes for one product keep their order
@@ -90,18 +104,18 @@ export default function Shopping({ household }) {
     return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [])
 
-  const habitsMap = useMemo(() => (load.data ? habits(load.data.purchases) : new Map()), [load.data])
+  const habitsMap = useMemo(() => (data ? habits(data.purchases) : new Map()), [data])
   const { groups, cart } = useMemo(() => {
-    if (!load.data) return { groups: [], cart: [] }
+    if (!data) return { groups: [], cart: [] }
     const due = dueHabits({
       habits: habitsMap,
-      presentIds: load.data.presentIds,
+      presentIds: data.presentIds,
       listedIds: new Set(rows.map((r) => r.product_id)),
       snoozes,
       today,
     })
     return buildList({ rows, due, products, habitsMap })
-  }, [load.data, habitsMap, rows, snoozes, products, today])
+  }, [data, habitsMap, rows, snoozes, products, today])
 
   const putRow = (row) => setRows((list) => [...list.filter((r) => r.product_id !== row.product_id), row])
   const dropRow = (id) => setRows((list) => list.filter((r) => r.product_id !== id))
@@ -229,7 +243,11 @@ export default function Shopping({ household }) {
     setStoring(true)
     pending.current = true // one reload when the save settles
     try {
-      const n = await save(() => storeChecked(today))
+      // Ticks still saving must land first, or they would be left out.
+      const n = await save(async () => {
+        await Promise.allSettled([...chains.current.values()])
+        return storeChecked(today)
+      })
       showToast(`${n} ${plural(n, 'producto', 'productos')} a la heladera`)
     } catch (error) {
       showToast(saveErrorMessage(error))
@@ -250,12 +268,12 @@ export default function Shopping({ household }) {
     )
   }
 
-  const empty = load.data && groups.length === 0 && cart.length === 0
+  const empty = data && groups.length === 0 && cart.length === 0
   return (
     <main className="screen">
       <h1>Compras</h1>
-      <LoadState {...load} />
-      {load.data && (
+      <LoadState {...load} error={good ? null : load.error} />
+      {data && (
         <>
           <ShoppingAdd products={products} onPick={add} onCreate={setCreatingFor} />
           {empty && (

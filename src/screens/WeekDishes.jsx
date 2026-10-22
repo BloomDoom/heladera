@@ -1,8 +1,8 @@
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLoad } from '../lib/useLoad.js'
-import { addRecipeToList, listedMessage, loadWeek, removeFromList } from '../lib/shopping.js'
-import { rankWeek } from '../lib/shoppingList.js'
+import { addRecipeToList, loadWeek, removeRecipeItems } from '../lib/shopping.js'
+import { listedMessage, rankWeek } from '../lib/shoppingList.js'
 import { plural, todayISO } from '../lib/format.js'
 import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
@@ -39,7 +39,7 @@ export default function WeekDishes() {
       const ids = await addRecipeToList(candidate.recipe_id, load.data.today)
       drop(candidate.recipe_id)
       if (ids.length === 0) {
-        showToast(`Ya tienen todo para ${candidate.title}`)
+        showToast(`No falta nada más para ${candidate.title}`)
       } else {
         // The names are only known when every missing product was added.
         const message =
@@ -48,7 +48,7 @@ export default function WeekDishes() {
             : `A la lista: ${plural(ids.length, 'producto', 'productos')}`
         showToast(message, async () => {
           try {
-            await Promise.all(ids.map((id) => removeFromList(id)))
+            await removeRecipeItems(candidate.recipe_id, ids)
           } catch (error) {
             showToast(saveErrorMessage(error))
           }

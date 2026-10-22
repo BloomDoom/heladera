@@ -98,6 +98,16 @@ test('add_recipe_to_list skips what is home or listed', async () => {
   await assert.rejects(as(db, u.a1, "select heladera.add_recipe_to_list(-1, '2026-10-26')"), /recipe not found/)
 })
 
+test('add_recipe_to_list rejects the own recipe of another household', async () => {
+  const { db, u, ids } = await setup()
+  await db.exec(`
+    insert into heladera.recipes (household_id, title, steps, source) values (2, 'propia de Otra', 'x', 'propia');
+  `)
+  const other = (await db.query("select id from heladera.recipes where title = 'propia de Otra'")).rows[0].id
+  await db.query('insert into heladera.recipe_ingredients (recipe_id, product_id, line, is_main) values ($1, $2, $3, true)', [other, ids.papa, 'x'])
+  await assert.rejects(as(db, u.a1, "select heladera.add_recipe_to_list($1, '2026-10-26')", [other]), /recipe not found/)
+})
+
 test('week_candidates counts what is missing', async () => {
   const { db, u, tortilla } = await setup()
   const mine = async () =>

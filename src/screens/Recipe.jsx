@@ -4,7 +4,8 @@ import { useLoad } from '../lib/useLoad.js'
 import { loadRecipePage, markCooked, undoCooked } from '../lib/today.js'
 import { setFavorite, deleteOwnRecipe } from '../lib/recipes.js'
 import { finishItem, restoreItem } from '../lib/fridge.js'
-import { addRecipeToList, listedMessage, removeFromList } from '../lib/shopping.js'
+import { addRecipeToList, removeFromList, removeRecipeItems } from '../lib/shopping.js'
+import { listedMessage } from '../lib/shoppingList.js'
 import { plural, todayISO } from '../lib/format.js'
 import { recipeSteps } from '../lib/steps.js'
 import { readOwnSteps } from '../lib/ownRecipe.js'
@@ -111,12 +112,12 @@ export default function Recipe({ household }) {
     try {
       const ids = await addRecipeToList(recipe.id, todayISO())
       if (ids.length === 0) {
-        showToast(`Ya tienen todo para ${recipe.title}`)
+        showToast(`No falta nada más para ${recipe.title}`)
       } else {
         const names = ids.map((pid) => recipe.ingredients.find((i) => i.product_id === pid)?.product?.name).filter(Boolean)
         showToast(listedMessage(names) ?? `A la lista: ${plural(ids.length, 'producto', 'productos')}`, async () => {
           try {
-            await Promise.all(ids.map((pid) => removeFromList(pid)))
+            await removeRecipeItems(recipe.id, ids)
           } catch (error) {
             showToast(saveErrorMessage(error))
           }

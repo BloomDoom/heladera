@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { dailyOrder } from '../suggest.js'
-import { habits, habitText, dueHabits, reasonText, buildList, rankWeek } from '../shoppingList.js'
+import { habits, habitText, dueHabits, reasonText, buildList, rankWeek, listedMessage } from '../shoppingList.js'
 
 const TODAY = '2026-10-22'
 const buys = (id, ...days) => days.map((bought_on) => ({ product_id: id, bought_on }))
@@ -138,4 +138,9 @@ test('rankWeek: own ranks like favorite, 14-day boundary, ties by dailyOrder', (
   const tied = rankWeek({ candidates: [c('x'), c('y'), c('z')], cooked: [], today: TODAY })
   const expected = ['x', 'y', 'z'].sort((p, q) => dailyOrder(p, TODAY) - dailyOrder(q, TODAY))
   assert.deepEqual(ids(tied), expected)
+})
+
+test('listedMessage names what was listed, or says nothing', () => {
+  assert.equal(listedMessage([]), null)
+  assert.equal(listedMessage(['a', 'b']), 'A la lista: a, b')
 })

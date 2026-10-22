@@ -109,6 +109,11 @@ export function buildList({ rows, due, products, habitsMap }) {
   return { groups, cart: stored.filter((e) => e.checked).sort(byName) }
 }
 
+// Toast text for the products a dish put on the list (names, or null when none).
+export function listedMessage(names) {
+  return names.length > 0 ? `A la lista: ${names.join(', ')}` : null
+}
+
 // Dishes worth planning for the week: not cooked lately, own and favorites first, then the fewest missing items.
 export function rankWeek({ candidates, cooked, today }) {
   const recent = new Set(

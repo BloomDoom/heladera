@@ -492,9 +492,13 @@ returns int language plpgsql security invoker set search_path = '' as $$
 declare
   ids bigint[];
 begin
-  select coalesce(array_agg(s.product_id), '{}') into ids
-  from heladera.shopping_items s
-  where s.household_id = (select heladera.my_household_id()) and s.checked;
+  -- Delete first: a second phone pressing at once waits on the row locks and finds none.
+  with gone as (
+    delete from heladera.shopping_items s
+    where s.household_id = (select heladera.my_household_id()) and s.checked
+    returning s.product_id
+  )
+  select coalesce(array_agg(g.product_id), '{}') into ids from gone g;
 
   if cardinality(ids) = 0 then
     return 0;

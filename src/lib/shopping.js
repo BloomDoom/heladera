@@ -111,9 +111,17 @@ export async function addRecipeToList(recipeId, today) {
   return unwrap(supabase.rpc('add_recipe_to_list', { recipe_id: recipeId, today }))
 }
 
-// Toast text for the products a dish put on the list (names, or null when none).
-export function listedMessage(names) {
-  return names.length > 0 ? `A la lista: ${names.join(', ')}` : null
+// Undo of addRecipeToList: removes only what that dish put on the list and is still unchecked.
+export async function removeRecipeItems(recipeId, productIds) {
+  return unwrap(
+    supabase
+      .from('shopping_items')
+      .delete()
+      .eq('reason', 'plato')
+      .eq('recipe_id', recipeId)
+      .eq('checked', false)
+      .in('product_id', productIds),
+  )
 }
 
 // Dishes 1 to 3 products away, and the last 14 days of cooked ones.
@@ -127,8 +135,8 @@ export async function loadWeek(today) {
   return { candidates, cooked }
 }
 
-// Calls onChange whenever the household's list changes on any phone.
-// Returns the function that stops listening.
+// Calls onChange whenever the household's list changes on any phone, and once
+// when the channel joins (to catch what happened before). Returns the function that stops listening.
 export function subscribeShopping(householdId, onChange) {
   const channel = supabase
     .channel(`shopping-${householdId}-${++channelCount}`)
@@ -142,7 +150,10 @@ export function subscribeShopping(householdId, onChange) {
         onChange()
       },
     )
-    .subscribe()
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') onChange()
+      else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') console.warn('shopping realtime:', status)
+    })
   return () => {
     supabase.removeChannel(channel)
   }
