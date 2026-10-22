@@ -12,6 +12,7 @@
   --primary-ink: #7fdcc0;  /* green for text: links, active tab (10:1 on the cards) */
   --primary-text: #ffffff;
   --danger: #ff9b9b;       /* errors (text and outlines) */
+  --warn: #f5b942;         /* amber: "vence pronto" (9.9:1 on the cards) */
 
   color-scheme: dark;
 
@@ -267,4 +268,111 @@ input:focus-visible {
 /* Below "Probar de nuevo" when the household could not be loaded. */
 .logout-after-error {
   margin-top: 1rem;
+}
+
+/* ───────── Undo / confirmation message, just above the tab bar */
+.toast {
+  position: fixed;
+  left: 1rem;
+  right: 1rem;
+  bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + 0.75rem);
+  z-index: 30;
+  max-width: 38rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  min-height: 56px;
+  background: #2e2e36; /* a lighter grey, so it stands out from the black page */
+  color: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+.toast button {
+  min-height: var(--tap);
+  padding: 0 1rem;
+  background: none;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ───────── Heladera */
+.fridge-empty,
+.fridge-list {
+  margin-top: 1rem;
+}
+
+.fridge-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.fridge-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* The whole row is one button: name, time in the fridge, warning. */
+.fridge-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.fridge-name {
+  flex: 1 1 100%;
+  font-weight: 700;
+}
+
+.chip {
+  padding: 0.1rem 0.6rem;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.chip-soon {
+  color: var(--warn);
+}
+.chip-over {
+  color: var(--danger);
+}
+
+.fridge-actions {
+  padding: 0 1rem 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+.fridge-actions p {
+  margin: 0 0 1rem;
+}
+
+.link-button {
+  min-height: var(--tap);
+  margin-bottom: 0.5rem;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--primary-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
 }
