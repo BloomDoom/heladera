@@ -27,6 +27,7 @@ export default function Recipe({ household }) {
   const [cookedId, setCookedId] = useState(null) // set once the dish is recorded
   const [saving, setSaving] = useState(false)
   const sending = useRef(false) // blocks a second tap before React re-renders
+  const finishing = useRef(false) // same, for "Listo" / "Nada se acabó"
 
   const { recipe, items, assumedIds } = load.data ?? {}
 
@@ -68,6 +69,8 @@ export default function Recipe({ household }) {
 
   // Finishes the chosen items, leaves the screen and offers Undo.
   async function done(recordedId, chosen) {
+    if (finishing.current) return
+    finishing.current = true
     setSaving(true)
     const finished = []
     let failed = false
@@ -77,18 +80,22 @@ export default function Recipe({ household }) {
         finished.push(item)
       } catch (error) {
         failed = true
-        showToast(saveErrorMessage(error))
+        console.error(saveErrorMessage(error), error)
       }
     }
     navigate('/', { replace: true })
-    if (failed) return // the error toast stays; the dish is recorded anyway
-    showToast(`Anotado: ${recipe.title}`, async () => {
-      try {
-        await undoCooked(recordedId)
-        for (const item of finished) await restoreItem(household.id, item)
-      } catch (error) {
-        showToast(saveErrorMessage(error))
-      }
+    // One toast, with Undo even when some items could not be finished.
+    const message = failed
+      ? 'Anotado, pero no se pudo sacar todo. Probá de nuevo.'
+      : `Anotado: ${recipe.title}`
+    showToast(message, async () => {
+      // Every step runs on its own, so one failure doesn't strand the rest.
+      const results = await Promise.allSettled([
+        undoCooked(recordedId),
+        ...finished.map((item) => restoreItem(household.id, item)),
+      ])
+      const rejected = results.find((r) => r.status === 'rejected')
+      if (rejected) showToast(saveErrorMessage(rejected.reason))
     })
   }
 
@@ -120,11 +127,11 @@ export default function Recipe({ household }) {
       {recipe && (
         <>
           <h1>{recipe.title}</h1>
-          {(recipe.minutes || recipe.servings) && (
+          {(recipe.minutes > 0 || recipe.servings > 0) && (
             <p className="muted recipe-meta">
               {[
-                recipe.minutes && `${recipe.minutes} min`,
-                recipe.servings && `${recipe.servings} ${recipe.servings === 1 ? 'porción' : 'porciones'}`,
+                recipe.minutes > 0 && `${recipe.minutes} min`,
+                recipe.servings > 0 && `${recipe.servings} ${recipe.servings === 1 ? 'porción' : 'porciones'}`,
               ]
                 .filter(Boolean)
                 .join(' · ')}
