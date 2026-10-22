@@ -156,7 +156,7 @@ test('migration matches schema.sql', async () => {
     indexes: (await db.query(`select tablename, indexname, indexdef from pg_indexes
       where schemaname = 'heladera' order by 1, 2`)).rows,
   })
-  const full = await newDb(ZONA_FIT + '/schema.sql', 'supabase/schema.sql')
+  const full = await newDb(ZONA_FIT + '/schema.sql', 'supabase/tests/fixtures/heladera-schema-stage2b.sql')
   const migrated = await newDb(
     ZONA_FIT + '/schema.sql',
     'supabase/tests/fixtures/heladera-schema-stage2a.sql',
