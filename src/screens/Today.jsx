@@ -63,6 +63,7 @@ export default function Today({ household }) {
   return (
     <main className="screen">
       <h1>¿Qué comemos hoy?</h1>
+      <Link to="/search" className="link-button today-search">Buscar receta</Link>
       <LoadState {...load} />
       {load.data && current && (
         <SuggestionCard

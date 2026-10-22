@@ -16,6 +16,25 @@ async function readCandidates() {
   }
 }
 
+// Every recipe's id, title and minutes, page by page (there are ~3,000).
+async function readRecipeTitles() {
+  const all = []
+  for (let from = 0; ; from += PAGE) {
+    const page = await unwrap(
+      supabase.from('recipes').select('id, title, minutes').order('id').range(from, from + PAGE - 1),
+    )
+    all.push(...page)
+    if (page.length < PAGE) return all
+  }
+}
+
+// What "Buscar receta" needs: every recipe, and the ids of the ones the
+// household can make with what it has (they go first in the results).
+export async function loadRecipeSearch() {
+  const [recipes, candidates] = await Promise.all([readRecipeTitles(), readCandidates()])
+  return { recipes, makeableIds: new Set(candidates.map((c) => c.recipe_id)) }
+}
+
 // Everything the "Hoy" screen needs, loaded in parallel: the recipes that can
 // be cooked (or almost), the fridge, the last 180 days of cooked dishes and
 // the last 14 days of skipped ones.

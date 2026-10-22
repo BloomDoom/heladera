@@ -355,6 +355,38 @@ input:focus-visible {
 .chip-over {
   color: var(--danger);
 }
+.chip-ok {
+  color: var(--primary-ink);
+}
+
+/* "Buscar receta": results reuse the history rows, with the title on top
+   and "Se puede hacer" / minutes under it. */
+.search-results {
+  margin-top: 1rem;
+}
+.search-results a {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.75rem;
+}
+.search-title {
+  color: var(--text);
+  font-weight: 600;
+}
+.search-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.search-meta:empty {
+  display: none;
+}
+.today-search {
+  display: flex;
+  align-items: center;
+  margin: -0.5rem 0 0.75rem;
+}
 
 .fridge-actions {
   padding: 0 1rem 1rem;
