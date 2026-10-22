@@ -4,19 +4,12 @@ import { useLoad } from '../lib/useLoad.js'
 import { loadRecipePage, markCooked, undoCooked } from '../lib/today.js'
 import { finishItem, restoreItem } from '../lib/fridge.js'
 import { todayISO } from '../lib/format.js'
+import { recipeSteps } from '../lib/steps.js'
 import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
 import LoadState from '../components/LoadState.jsx'
 import BackButton from '../components/BackButton.jsx'
 import FinishedSheet from '../components/FinishedSheet.jsx'
-
-// Paragraphs are separated by blank lines; a single line break is just wrapping.
-function stepParagraphs(steps) {
-  return (steps ?? '')
-    .split(/\n\s*\n/)
-    .map((p) => p.trim().replace(/\n/g, ' '))
-    .filter((p) => p !== '')
-}
 
 // A recipe, and the "Lo cocinamos" button that records it as cooked.
 export default function Recipe({ household }) {
@@ -99,7 +92,7 @@ export default function Recipe({ household }) {
     })
   }
 
-  const paragraphs = recipe ? stepParagraphs(recipe.steps) : []
+  const steps = recipe ? recipeSteps(recipe.steps) : []
   const main = recipe ? recipe.ingredients.filter((i) => i.is_main) : []
   const minor = recipe ? recipe.ingredients.filter((i) => !i.is_main) : []
   const isMissing = (ing) =>
@@ -145,14 +138,17 @@ export default function Recipe({ household }) {
               {ingredientList(minor)}
             </>
           )}
-          {paragraphs.length > 0 && (
+          {steps.length > 0 && (
             <>
               <h2>Preparación</h2>
-              <div className="recipe-steps">
-                {paragraphs.map((p, index) => (
-                  <p key={index}>{p}</p>
+              <ol className="recipe-steps">
+                {steps.map((step, index) => (
+                  <li key={index}>
+                    <span className="step-number" aria-hidden="true">{index + 1}</span>
+                    <p>{step}</p>
+                  </li>
                 ))}
-              </div>
+              </ol>
             </>
           )}
           {recipe.source && (
