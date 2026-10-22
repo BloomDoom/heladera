@@ -1,4 +1,4 @@
-import { prepare, matchProducts, isIgnored, argentinize, stripNoise } from './normalize.js'
+import { prepare, matchProducts, withoutGenericBeef, isIgnored, argentinize, stripNoise } from './normalize.js'
 import { fixMojibake } from './mojibake.js'
 
 // Titles that are a sauce, a drink or a dessert, not a dish for dinner.
@@ -32,7 +32,7 @@ export function assemble(raw, { dict, words, ignore, vocab }) {
       // counts when nothing else matched ("verdura para caldo (zanahoria…)").
       const first = line.replace(/\([^)]*\)?/g, ' ').split(/\s+o\s+/i)[0]
       const firstCodes = matchProducts(first, d)
-      const codes = firstCodes.length ? firstCodes : matchProducts(line, d)
+      const codes = withoutGenericBeef(firstCodes.length ? firstCodes : matchProducts(line, d), line, d)
       // An optional ingredient nobody knows doesn't stop you from cooking it.
       if (!codes.length && OPTIONAL.test(line)) continue
       if (!codes.length) {

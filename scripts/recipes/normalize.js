@@ -33,26 +33,49 @@ export function prepare(products) {
   const terms = []
   for (const p of products) {
     for (const term of new Set([p.name, ...p.synonyms].map(fold))) {
-      terms.push({ code: p.code, length: term.length, re: new RegExp(`(?<![a-z])${escape(term)}(es|s)?(?![a-z])`, 'g') })
+      terms.push({ code: p.code, term, length: term.length, re: new RegExp(`(?<![a-z])${escape(term)}(es|s)?(?![a-z])`, 'g') })
     }
   }
   terms.sort((a, b) => b.length - a.length)
-  return { terms }
+  return { terms, category: new Map(products.map((p) => [p.code, p.category])) }
+}
+
+// Every product name or synonym found in the line, in the order they appear.
+function hits(line, d) {
+  let text = fold(line).replace(NOISE, ' ').replace(QUALIFIERS, ' ')
+  const found = []
+  for (const { code, term, re } of d.terms) {
+    re.lastIndex = 0
+    text = text.replace(re, (m, _plural, index) => {
+      found.push({ code, term, index })
+      return ' '.repeat(m.length) // so shorter terms can't match inside it
+    })
+  }
+  return found.sort((a, b) => a.index - b.index)
 }
 
 // Product codes found in the line, in the order they appear, each once.
 export function matchProducts(line, d) {
-  let text = fold(line).replace(NOISE, ' ').replace(QUALIFIERS, ' ')
-  const found = []
-  for (const { code, re } of d.terms) {
-    re.lastIndex = 0
-    text = text.replace(re, (m, _plural, index) => {
-      found.push({ code, index })
-      return ' '.repeat(m.length) // so shorter terms can't match inside it
-    })
-  }
-  found.sort((a, b) => a.index - b.index)
-  return [...new Set(found.map((f) => f.code))]
+  return [...new Set(hits(line, d).map((f) => f.code))]
+}
+
+// Beef synonyms that are also a cut or a plain word for any meat or fish:
+// "4 lomos o rodajas de merluza", "pechugas de pollo en bistec".
+const GENERIC_BEEF = new Set(['carne', 'lomo', 'lomo fino', 'bife', 'bifes', 'bistec', 'bisteck'])
+const MEAT_OR_FISH = new Set(['carne', 'pollo', 'pescado'])
+
+// When beef only came from one of those words and the whole line names
+// another meat or fish, that one is the product instead of beef.
+export function withoutGenericBeef(codes, line, d) {
+  if (!codes.includes('carne-de-vaca')) return codes
+  const found = hits(line, d)
+  const beef = found.filter((f) => f.code === 'carne-de-vaca')
+  if (beef.some((f) => !GENERIC_BEEF.has(f.term))) return codes
+  const others = found
+    .map((f) => f.code)
+    .filter((code) => code !== 'carne-de-vaca' && MEAT_OR_FISH.has(d.category.get(code)))
+  if (others.length === 0) return codes
+  return [...new Set([...codes.filter((code) => code !== 'carne-de-vaca'), ...others])]
 }
 
 // Lines that aren't food: toothpicks, foil…

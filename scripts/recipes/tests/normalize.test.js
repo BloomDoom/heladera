@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { prepare, matchProducts, isIgnored, argentinize, CATEGORIES } from '../normalize.js'
+import { prepare, matchProducts, withoutGenericBeef, isIgnored, argentinize, CATEGORIES } from '../normalize.js'
 
 const load = (name) => JSON.parse(readFileSync(new URL(`../dictionary/${name}`, import.meta.url), 'utf8'))
 const products = load('products.json')
@@ -64,6 +64,20 @@ test('dictionary is valid', () => {
   for (const code of ['sal', 'pimienta', 'aceite', 'agua']) {
     assert.equal(products.find((p) => p.code === code)?.assumed, true, code)
   }
+})
+
+// "Lomo", "bife", "bistec" and a bare "carne" are cuts or words, not only
+// beef: when the line names another meat or fish, that one is the product.
+test('generic cuts follow the meat or fish the line names', () => {
+  const resolve = (codes, line) => withoutGenericBeef(codes, line, d)
+  assert.deepEqual(resolve(match('4 lomos'), '4 lomos o rodajas de merluza'), ['pescado'])
+  assert.deepEqual(resolve(match('4 pechugas de Pollo en bistec'), '4 pechugas de Pollo en bistec'), ['pollo'])
+  assert.deepEqual(resolve(match('Carne'), 'Carne (Pollo, salchichas, conejo)'), ['pollo'])
+  // Real beef stays.
+  assert.deepEqual(resolve(match('1 kg de lomo'), '1 kg de lomo'), ['carne-de-vaca'])
+  const mixed = '500 gramos de carne picada, trozos de pollo y de solomillo'
+  assert.deepEqual(resolve(match(mixed), mixed), ['carne-de-vaca', 'pollo'])
+  assert.deepEqual(resolve(match('2 bifes de chorizo'), '2 bifes de chorizo'), ['carne-de-vaca'])
 })
 
 test('review I1: generic words inside other foods', () => {
