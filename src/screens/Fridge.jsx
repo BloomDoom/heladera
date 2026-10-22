@@ -61,7 +61,7 @@ export default function Fridge({ household }) {
   }
 
   return (
-    <main className="screen">
+    <main className="screen fridge-screen">
       <h1>Heladera</h1>
       <LoadState {...load} />
       {load.data && (

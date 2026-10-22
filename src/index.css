@@ -414,6 +414,10 @@ select {
   font-weight: 400;
 }
 
+.fridge-screen {
+  /* Room for the undo toast above the tab bar. */
+  padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + 5rem);
+}
 .add-screen {
   /* Room for the bar with "Agregar" above the tab bar. */
   padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + 6rem);

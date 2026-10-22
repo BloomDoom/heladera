@@ -67,8 +67,8 @@ export default function AddToFridge({ household }) {
       setSaving(false)
       return
     }
-    showToast('Listo, ya están en la heladera')
-    navigate('/fridge')
+    showToast(selected.size === 1 ? 'Listo, ya está en la heladera' : 'Listo, ya están en la heladera')
+    navigate('/fridge', { replace: true })
   }
 
   const presentIds = load.data?.presentIds ?? new Set()
