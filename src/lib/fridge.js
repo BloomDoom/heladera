@@ -14,9 +14,10 @@ export async function loadFridge() {
   )
 }
 
-// "Se acabó": takes the product out of the fridge.
-export async function finishItem(productId) {
-  return unwrap(supabase.from('fridge_items').delete().eq('product_id', productId))
+// "Se acabó": takes the product out of the fridge and puts it on the
+// shopping list. Returns true when it was added to the list now.
+export async function finishItem(productId, today) {
+  return unwrap(supabase.rpc('finish_fridge_item', { product_id: productId, today }))
 }
 
 // Undo of finishItem: puts the same row back (no purchase is recorded).

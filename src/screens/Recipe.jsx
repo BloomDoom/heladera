@@ -4,6 +4,7 @@ import { useLoad } from '../lib/useLoad.js'
 import { loadRecipePage, markCooked, undoCooked } from '../lib/today.js'
 import { setFavorite, deleteOwnRecipe } from '../lib/recipes.js'
 import { finishItem, restoreItem } from '../lib/fridge.js'
+import { removeFromList } from '../lib/shopping.js'
 import { todayISO } from '../lib/format.js'
 import { recipeSteps } from '../lib/steps.js'
 import { readOwnSteps } from '../lib/ownRecipe.js'
@@ -128,11 +129,13 @@ export default function Recipe({ household }) {
     finishing.current = true
     setSaving(true)
     const finished = []
+    const listedIds = [] // finished items that went onto the shopping list
     let failed = false
     for (const item of chosen) {
       try {
-        await finishItem(item.product_id)
+        const listed = await finishItem(item.product_id, todayISO())
         finished.push(item)
+        if (listed) listedIds.push(item.product_id)
       } catch (error) {
         failed = true
         console.error(saveErrorMessage(error), error)
@@ -148,6 +151,7 @@ export default function Recipe({ household }) {
       const results = await Promise.allSettled([
         undoCooked(recordedId),
         ...finished.map((item) => restoreItem(household.id, item)),
+        ...listedIds.map((id) => removeFromList(id)),
       ])
       const rejected = results.find((r) => r.status === 'rejected')
       if (rejected) showToast(saveErrorMessage(rejected.reason))
