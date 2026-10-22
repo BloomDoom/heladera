@@ -17,6 +17,7 @@ export default function AssumedEditor({ products, overrides, onChange }) {
   return (
     <>
       <p className="muted">Para elegir platos, la app cuenta con que esto nunca falta.</p>
+      {basics.length === 0 && <p className="muted">No hay nada marcado.</p>}
       <ul className="basics-chips">
         {basics.map((p) => (
           <li key={p.id} className="basic-chip">
@@ -34,6 +35,7 @@ export default function AssumedEditor({ products, overrides, onChange }) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
+      {query.trim() !== '' && results.length === 0 && <p className="muted">No encontramos nada.</p>}
       {results.length > 0 && (
         <ul className="basics-results">
           {results.map((p) => (

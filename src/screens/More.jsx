@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { signOut } from '../lib/supabase.js'
 import { useLoad } from '../lib/useLoad.js'
@@ -19,20 +19,27 @@ async function loadMore() {
 export default function More({ household }) {
   const showToast = useToast()
   const load = useLoad(loadMore, [])
-  const [overrides, setOverrides] = useState([])
+  // null until the first edit: until then the loaded overrides are shown.
+  const [local, setLocal] = useState(null)
+  const latest = useRef(null) // same as `local`, but updated at once, even between renders
+  const overrides = local ?? load.data?.overrides ?? []
 
-  // Work on a copy, so a chip changes at once and goes back if saving fails.
-  useEffect(() => {
-    if (load.data) setOverrides(load.data.overrides)
-  }, [load.data])
+  function put(productId, entry) {
+    const base = latest.current ?? load.data.overrides
+    latest.current = [...base.filter((o) => o.product_id !== productId), ...(entry ? [entry] : [])]
+    setLocal(latest.current)
+  }
 
+  // Changes only this product, and on failure puts back only this product,
+  // so another change still in flight is not undone.
   async function change(product, assumed) {
-    const previous = overrides
-    setOverrides([...overrides.filter((o) => o.product_id !== product.id), { product_id: product.id, assumed }])
+    const base = latest.current ?? load.data.overrides
+    const previous = base.find((o) => o.product_id === product.id)
+    put(product.id, { product_id: product.id, assumed })
     try {
       await setAssumed(household.id, product.id, assumed)
     } catch (error) {
-      setOverrides(previous)
+      put(product.id, previous)
       showToast(saveErrorMessage(error))
     }
   }
