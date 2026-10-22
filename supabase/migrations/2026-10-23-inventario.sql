@@ -68,7 +68,10 @@ alter table heladera.purchases enable row level security;
 create policy "Household sees its purchases" on heladera.purchases
   for select to authenticated using (household_id = (select heladera.my_household_id()));
 create policy "Household records its purchases" on heladera.purchases
-  for insert to authenticated with check (household_id = (select heladera.my_household_id()));
+  for insert to authenticated with check (
+    household_id = (select heladera.my_household_id())
+    and exists (select 1 from heladera.products p where p.id = product_id)
+  );
 grant select, insert on heladera.purchases to authenticated;
 
 commit;

@@ -166,6 +166,7 @@ create policy "Ingredients of visible recipes" on heladera.recipe_ingredients
   using (exists (select 1 from heladera.recipes r where r.id = recipe_id));
 
 grant select on heladera.products, heladera.recipes, heladera.recipe_ingredients to authenticated;
+
 -- Households add their own products (the base dictionary stays read-only:
 -- no code, assumed or synonyms).
 create policy "Households add own products" on heladera.products
@@ -188,7 +189,10 @@ alter table heladera.purchases enable row level security;
 create policy "Household sees its purchases" on heladera.purchases
   for select to authenticated using (household_id = (select heladera.my_household_id()));
 create policy "Household records its purchases" on heladera.purchases
-  for insert to authenticated with check (household_id = (select heladera.my_household_id()));
+  for insert to authenticated with check (
+    household_id = (select heladera.my_household_id())
+    and exists (select 1 from heladera.products p where p.id = product_id)
+  );
 grant select, insert on heladera.purchases to authenticated;
 
 -- The loader (scripts/recipes/load.js) uses the secret key, role service_role.

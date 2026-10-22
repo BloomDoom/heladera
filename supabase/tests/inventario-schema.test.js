@@ -122,11 +122,38 @@ test('anon reads nothing', async () => {
   await assert.rejects(as(db, null, 'select * from heladera.fridge_items'), /permission denied/)
 })
 
+test('purchases only accept products the household can see', async () => {
+  const { db, u, otra } = await setup()
+  await assert.rejects(
+    as(db, u.a1, "insert into heladera.purchases (household_id, product_id, bought_on) values (1, $1, '2026-10-22')", [otra]),
+    /row-level security/,
+  )
+})
+
+test('households do not see each other purchases', async () => {
+  const { db, u, leche } = await setup()
+  await add(db, u.a1, [leche], '2026-10-22')
+  assert.equal((await rows(db, u.b1, 'select * from heladera.purchases')).length, 0)
+})
+
+test('anon cannot call add_to_fridge', async () => {
+  const { db } = await setup()
+  await assert.rejects(as(db, null, "select heladera.add_to_fridge(array[1], '2026-10-22')"), /permission denied/)
+})
+
 test('migration matches schema.sql', async () => {
   const shape = async (db) => ({
     columns: (await db.query(`select table_name, column_name, data_type, is_nullable, column_default
       from information_schema.columns where table_schema = 'heladera' order by 1, 2`)).rows,
     policies: (await db.query(`select tablename, policyname, cmd, qual, with_check from pg_policies
+      where schemaname = 'heladera' order by 1, 2`)).rows,
+    routines: (await db.query(`select routine_name, routine_definition from information_schema.routines
+      where routine_schema = 'heladera' order by 1, 2`)).rows,
+    tableGrants: (await db.query(`select grantee, table_name, privilege_type from information_schema.role_table_grants
+      where table_schema = 'heladera' order by 1, 2, 3`)).rows,
+    columnGrants: (await db.query(`select grantee, table_name, column_name, privilege_type from information_schema.column_privileges
+      where table_schema = 'heladera' order by 1, 2, 3, 4`)).rows,
+    indexes: (await db.query(`select tablename, indexname, indexdef from pg_indexes
       where schemaname = 'heladera' order by 1, 2`)).rows,
   })
   const full = await newDb(ZONA_FIT + '/schema.sql', 'supabase/schema.sql')
