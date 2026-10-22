@@ -15,7 +15,7 @@ export function urgencyText(name, daysLeft) {
 
 // `days` is null when the dish was never cooked.
 export function noveltyText(days) {
-  if (days === null) return 'No lo cocinaron nunca'
+  if (days === null) return 'No lo cocinan hace meses'
   return `No lo comen hace ${plural(Math.floor(days / 7), 'semana', 'semanas')}`
 }
 
@@ -89,7 +89,7 @@ export function rankSuggestions({ candidates, items, cooked, rejections, today }
       minutes: c.minutes,
       score,
       reasons: reasons.length ? reasons : ['Se puede hacer con lo que hay'],
-      missing: c.missing_product_id !== null ? `Falta ${c.missing_product_name.toLowerCase()}` : null,
+      missing: c.missing_product_id !== null ? `Falta ${(c.missing_product_name ?? '').toLowerCase() || 'algo'}` : null,
     }
   })
 

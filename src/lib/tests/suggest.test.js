@@ -27,7 +27,7 @@ test('expiring products come first', () => {
   const items = [item(1, 'Huevo', 3, '2026-10-20'), item(2, 'Papa', 12, '2026-10-20')]
   const result = rank({ candidates: [cand(2, [2]), cand(1, [1])], items })
   assert.deepEqual(ids(result), [1, 2])
-  assert.deepEqual(result[0].reasons, ['Huevo vence mañana', 'No lo cocinaron nunca'])
+  assert.deepEqual(result[0].reasons, ['Huevo vence mañana', 'No lo cocinan hace meses'])
 })
 
 test('cooked this week sinks', () => {
@@ -98,6 +98,11 @@ test('urgencyText', () => {
 })
 
 test('noveltyText', () => {
-  assert.equal(noveltyText(null), 'No lo cocinaron nunca')
+  assert.equal(noveltyText(null), 'No lo cocinan hace meses')
   assert.equal(noveltyText(14), 'No lo comen hace 2 semanas')
+})
+
+test('a missing product without a name still says something', () => {
+  const a = cand(1, [], { missing_product_id: 9, missing_product_name: null })
+  assert.equal(rank({ candidates: [a] })[0].missing, 'Falta algo')
 })
