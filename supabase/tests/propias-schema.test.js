@@ -92,6 +92,7 @@ test('a failed save changes nothing', async () => {
       { product_id: ids.huevo, line: 'h', is_main: true },
       { product_id: ids.secreta, line: 's', is_main: false },
     ]),
+    /row-level security/,
   )
   assert.equal((await recipeRow(db, id)).title, 'Tortilla de la abuela')
   assert.equal(await ingredientCount(db, id), 2)
@@ -120,6 +121,10 @@ test('own recipes and favorites belong to the household', async () => {
     /row-level security/,
   )
   await assert.rejects(
+    as(db, u.a1, "insert into heladera.recipes (household_id, title, steps, source) values (1, 't', 's', 'abuela')"),
+    /row-level security/,
+  )
+  await assert.rejects(
     as(db, u.a1, 'insert into heladera.recipe_ingredients (recipe_id, product_id, line, is_main) values ($1, $2, $3, true)', [tortilla, ids.cebolla, 'c']),
     /row-level security/,
   )
@@ -135,7 +140,7 @@ test('own recipes and favorites belong to the household', async () => {
 
 test('users without household cannot save or favorite', async () => {
   const { db, u, ids, tortilla } = await setup()
-  await assert.rejects(save(db, u.solo, null, 'X', two(ids)))
+  await assert.rejects(save(db, u.solo, null, 'X', two(ids)), /row-level security/)
   await assert.rejects(favorite(db, u.solo, 1, tortilla), /row-level security/)
   assert.equal((await rows(db, u.solo, 'select * from heladera.favorites')).length, 0)
 })
@@ -167,8 +172,8 @@ test('deleting an own recipe removes its ingredients and favorite', async () => 
 
 test('blank title or no ingredients is rejected', async () => {
   const { db, u, ids } = await setup()
-  await assert.rejects(save(db, u.a1, null, '  ', two(ids)))
-  await assert.rejects(save(db, u.a1, null, 'X', []))
+  await assert.rejects(save(db, u.a1, null, '  ', two(ids)), /title is required/)
+  await assert.rejects(save(db, u.a1, null, 'X', []), /ingredients are required/)
   assert.equal((await db.query('select * from heladera.recipes where household_id is not null')).rows.length, 0)
 })
 

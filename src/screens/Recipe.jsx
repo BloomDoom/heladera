@@ -6,6 +6,7 @@ import { setFavorite, deleteOwnRecipe } from '../lib/recipes.js'
 import { finishItem, restoreItem } from '../lib/fridge.js'
 import { todayISO } from '../lib/format.js'
 import { recipeSteps } from '../lib/steps.js'
+import { readOwnSteps } from '../lib/ownRecipe.js'
 import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
 import LoadState from '../components/LoadState.jsx'
@@ -47,8 +48,13 @@ export default function Recipe({ household }) {
       await setFavorite(household.id, recipe.id, next)
       if (next) showToast('Guardada en favoritas')
     } catch (error) {
-      setLocalFavorite(!next)
-      showToast(saveErrorMessage(error))
+      // Already a favorite from another device: that is what was asked for.
+      if (next && error?.code === '23505') {
+        showToast('Guardada en favoritas')
+      } else {
+        setLocalFavorite(!next)
+        showToast(saveErrorMessage(error))
+      }
     } finally {
       togglingFavorite.current = false
     }
@@ -60,6 +66,7 @@ export default function Recipe({ household }) {
     if (removing.current) return
     if (!armed) {
       setArmed(true)
+      clearTimeout(armTimer.current)
       armTimer.current = setTimeout(() => setArmed(false), 4000)
       return
     }
@@ -147,7 +154,7 @@ export default function Recipe({ household }) {
     })
   }
 
-  const steps = recipe ? recipeSteps(recipe.steps) : []
+  const steps = recipe ? (recipe.household_id != null ? readOwnSteps(recipe.steps) : recipeSteps(recipe.steps)) : []
   const main = recipe ? recipe.ingredients.filter((i) => i.is_main) : []
   const minor = recipe ? recipe.ingredients.filter((i) => !i.is_main) : []
   const isMissing = (ing) =>

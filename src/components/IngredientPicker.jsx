@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { searchProducts } from '../lib/products.js'
+import { findByName, searchProducts } from '../lib/products.js'
 
 // One ingredient row of the recipe form: which product, whether it is a main
 // ingredient, and how the recipe words it. `onChange(patch)` merges fields;
@@ -48,11 +48,13 @@ export default function IngredientPicker({ ingredient, products, onChange, onRem
                   </button>
                 </li>
               ))}
-              <li>
-                <button type="button" className="ingredient-create" onClick={() => onCreate(text)}>
-                  Crear "{text}"
-                </button>
-              </li>
+              {!findByName(products, text) && (
+                <li>
+                  <button type="button" className="ingredient-create" onClick={() => onCreate(text)}>
+                    Crear "{text}"
+                  </button>
+                </li>
+              )}
             </ul>
           )}
         </>

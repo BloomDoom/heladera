@@ -4,8 +4,7 @@ import { useLoad } from '../lib/useLoad.js'
 import { loadBasics, loadRecipe } from '../lib/today.js'
 import { saveOwnRecipe } from '../lib/recipes.js'
 import { createProduct } from '../lib/fridge.js'
-import { validateOwnRecipe } from '../lib/ownRecipe.js'
-import { recipeSteps } from '../lib/steps.js'
+import { validateOwnRecipe, readOwnSteps, wholeNumber } from '../lib/ownRecipe.js'
 import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
 import LoadState from '../components/LoadState.jsx'
@@ -17,13 +16,6 @@ let nextKey = 0
 const newKey = () => ++nextKey
 
 const blankIngredient = () => ({ key: newKey(), product_id: null, product_name: '', line: '', is_main: true })
-
-// Whole number above zero from a text field; null when empty, NaN when wrong.
-function wholeNumber(text) {
-  if (!text.trim()) return null
-  const n = Number(text)
-  return Number.isInteger(n) && n > 0 ? n : NaN
-}
 
 // The products always load; the recipe only when editing.
 async function loadFormData(id) {
@@ -40,13 +32,13 @@ export default function RecipeForm({ household }) {
 
   return (
     <main className="screen form-screen">
-      <BackButton fallback="/more" />
+      <BackButton fallback={id ? `/recipe/${id}` : '/more'} />
       <h1>{id ? 'Editar receta' : 'Nueva receta'}</h1>
       <LoadState {...load} />
       {load.data && !editable && (
         <>
           <p>Esta receta no se puede editar.</p>
-          <Link to={`/recipe/${id}`}>Volver a la receta</Link>
+          <Link className="btn-secondary btn-link" to={`/recipe/${id}`}>Volver a la receta</Link>
         </>
       )}
       {/* Mounted only after loading, so a late load never overwrites what was typed. */}
@@ -77,7 +69,7 @@ function Editor({ household, recipe, initialProducts }) {
       : [blankIngredient()],
   )
   const [steps, setSteps] = useState(() => {
-    const list = recipe ? recipeSteps(recipe.steps) : []
+    const list = recipe ? readOwnSteps(recipe.steps) : []
     return (list.length ? list : ['']).map((text) => ({ key: newKey(), text }))
   })
   const [creatingFor, setCreatingFor] = useState(null) // { key, text } while "new product" is open
@@ -134,7 +126,9 @@ function Editor({ household, recipe, initialProducts }) {
       return
     }
     showToast('Receta guardada')
-    navigate(`/recipe/${savedId}`, { replace: true })
+    // After an edit, go back to the recipe already in the history.
+    if (recipe && window.history.state?.idx > 0) navigate(-1)
+    else navigate(`/recipe/${savedId}`, { replace: true })
   }
 
   if (creatingFor) {
@@ -157,11 +151,11 @@ function Editor({ household, recipe, initialProducts }) {
       </label>
       <label>
         Minutos (opcional)
-        <input type="number" inputMode="numeric" min="1" value={minutes} onChange={(e) => setMinutes(e.target.value)} />
+        <input type="text" inputMode="numeric" value={minutes} onChange={(e) => setMinutes(e.target.value)} />
       </label>
       <label>
         Porciones (opcional)
-        <input type="number" inputMode="numeric" min="1" value={servings} onChange={(e) => setServings(e.target.value)} />
+        <input type="text" inputMode="numeric" value={servings} onChange={(e) => setServings(e.target.value)} />
       </label>
 
       <h2>Ingredientes</h2>

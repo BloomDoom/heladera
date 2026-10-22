@@ -33,7 +33,7 @@ grant select, insert, delete on heladera.favorites to authenticated;
 -- keeps them from writing base rows.
 create policy "Households add own recipes" on heladera.recipes
   for insert to authenticated
-  with check (household_id = (select heladera.my_household_id()));
+  with check (household_id = (select heladera.my_household_id()) and source = 'propia');
 create policy "Households edit own recipes" on heladera.recipes
   for update to authenticated
   using (household_id = (select heladera.my_household_id()))

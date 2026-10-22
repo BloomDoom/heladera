@@ -14,7 +14,21 @@ export function validateOwnRecipe({ title, ingredients, steps }) {
   return null
 }
 
-// Paragraphs separated by a blank line; `recipeSteps` reads them back.
+// Paragraphs separated by a blank line; `readOwnSteps` reads them back.
 export function ownRecipeSteps(steps) {
   return steps.map((s) => s.trim()).filter(Boolean).join('\n\n')
+}
+
+// The steps of an own recipe: the paragraphs `ownRecipeSteps` wrote. The rules
+// of `recipeSteps` are for the source formats and would mangle these.
+export function readOwnSteps(text) {
+  if (!text) return []
+  return text.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean)
+}
+
+// Whole number above zero from a text field; null when empty, NaN when wrong.
+export function wholeNumber(text) {
+  if (!text.trim()) return null
+  const n = Number(text)
+  return Number.isInteger(n) && n > 0 ? n : NaN
 }
