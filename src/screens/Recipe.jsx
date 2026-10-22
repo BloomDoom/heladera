@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLoad } from '../lib/useLoad.js'
 import { loadRecipePage, markCooked, undoCooked } from '../lib/today.js'
-import { setFavorite } from '../lib/recipes.js'
+import { setFavorite, deleteOwnRecipe } from '../lib/recipes.js'
 import { finishItem, restoreItem } from '../lib/fridge.js'
 import { todayISO } from '../lib/format.js'
 import { recipeSteps } from '../lib/steps.js'
@@ -27,6 +27,13 @@ export default function Recipe({ household }) {
   const [localFavorite, setLocalFavorite] = useState(null)
   const togglingFavorite = useRef(false) // blocks a tap while the last one is saving
 
+  // Own recipes: the delete button is armed by a first tap, for 4 seconds.
+  const [armed, setArmed] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const armTimer = useRef(null)
+  const removing = useRef(false)
+  useEffect(() => () => clearTimeout(armTimer.current), [])
+
   const { recipe, items, assumedIds } = load.data ?? {}
   const favorite = localFavorite ?? load.data?.favorite ?? false
 
@@ -45,6 +52,31 @@ export default function Recipe({ household }) {
     } finally {
       togglingFavorite.current = false
     }
+  }
+
+  // Deleting also removes the history and the favorite, so there is no Undo:
+  // it asks for a second tap instead.
+  async function removeRecipe() {
+    if (removing.current) return
+    if (!armed) {
+      setArmed(true)
+      armTimer.current = setTimeout(() => setArmed(false), 4000)
+      return
+    }
+    removing.current = true
+    clearTimeout(armTimer.current)
+    setDeleting(true)
+    try {
+      await deleteOwnRecipe(recipe.id)
+    } catch (error) {
+      showToast(saveErrorMessage(error))
+      removing.current = false
+      setDeleting(false)
+      setArmed(false)
+      return
+    }
+    navigate('/', { replace: true })
+    showToast('Receta borrada')
   }
 
   // The recipe's products that are in the fridge, in recipe order, once each.
@@ -203,6 +235,16 @@ export default function Recipe({ household }) {
                 recipe.source
               )}
             </p>
+          )}
+          {recipe.household_id != null && (
+            <div className="own-actions">
+              <Link className="btn-secondary btn-link" to={`/recipe/${recipe.id}/edit`}>
+                Editar
+              </Link>
+              <button className="btn-secondary btn-danger" disabled={deleting} onClick={removeRecipe}>
+                {armed ? 'Tocá de nuevo para borrar' : 'Borrar receta'}
+              </button>
+            </div>
           )}
           <div className="add-bar">
             <button className="btn-primary" disabled={saving || cookedId !== null} onClick={cook}>
