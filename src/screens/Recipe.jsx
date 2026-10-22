@@ -4,8 +4,8 @@ import { useLoad } from '../lib/useLoad.js'
 import { loadRecipePage, markCooked, undoCooked } from '../lib/today.js'
 import { setFavorite, deleteOwnRecipe } from '../lib/recipes.js'
 import { finishItem, restoreItem } from '../lib/fridge.js'
-import { removeFromList } from '../lib/shopping.js'
-import { todayISO } from '../lib/format.js'
+import { addRecipeToList, listedMessage, removeFromList } from '../lib/shopping.js'
+import { plural, todayISO } from '../lib/format.js'
 import { recipeSteps } from '../lib/steps.js'
 import { readOwnSteps } from '../lib/ownRecipe.js'
 import { saveErrorMessage } from '../lib/errors.js'
@@ -23,6 +23,8 @@ export default function Recipe({ household }) {
   const [cookedId, setCookedId] = useState(null) // set once the dish is recorded
   const [saving, setSaving] = useState(false)
   const sending = useRef(false) // blocks a second tap before React re-renders
+  const listing = useRef(false) // same, for "Agregar lo que falta"
+  const [listingBusy, setListingBusy] = useState(false)
   const finishing = useRef(false) // same, for "Listo" / "Nada se acabó"
 
   // null until the first tap: until then the loaded value is shown.
@@ -99,6 +101,33 @@ export default function Recipe({ household }) {
       }
     }
     return list
+  }
+
+  // Lists what the dish is missing. Names come from the recipe's own ingredients.
+  async function addMissing() {
+    if (listing.current) return
+    listing.current = true
+    setListingBusy(true)
+    try {
+      const ids = await addRecipeToList(recipe.id, todayISO())
+      if (ids.length === 0) {
+        showToast(`Ya tienen todo para ${recipe.title}`)
+      } else {
+        const names = ids.map((pid) => recipe.ingredients.find((i) => i.product_id === pid)?.product?.name).filter(Boolean)
+        showToast(listedMessage(names) ?? `A la lista: ${plural(ids.length, 'producto', 'productos')}`, async () => {
+          try {
+            await Promise.all(ids.map((pid) => removeFromList(pid)))
+          } catch (error) {
+            showToast(saveErrorMessage(error))
+          }
+        })
+      }
+    } catch (error) {
+      showToast(saveErrorMessage(error))
+    } finally {
+      listing.current = false
+      setListingBusy(false)
+    }
   }
 
   async function cook() {
@@ -223,6 +252,9 @@ export default function Recipe({ household }) {
               {ingredientList(minor)}
             </>
           )}
+          <button className="btn-secondary recipe-list-btn" disabled={listingBusy} onClick={addMissing}>
+            Agregar lo que falta a la lista
+          </button>
           {steps.length > 0 && (
             <>
               <h2>Preparación</h2>

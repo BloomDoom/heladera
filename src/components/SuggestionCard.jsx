@@ -5,7 +5,7 @@ const EXIT_MS = 200
 
 // One dish proposal. Swipe left (or ✕) to skip it, swipe right (or ✓) to see
 // the recipe. The parent gives each dish its own `key`, so a new dish starts fresh.
-export default function SuggestionCard({ suggestion, onSkip, onOpen }) {
+export default function SuggestionCard({ suggestion, onSkip, onOpen, openLabel = 'Ver receta' }) {
   const [dx, setDx] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [leaving, setLeaving] = useState(false)
@@ -90,7 +90,7 @@ export default function SuggestionCard({ suggestion, onSkip, onOpen }) {
       </div>
       <div className="suggestion-actions">
         <button className="suggestion-btn" aria-label="Otro plato" onClick={skip}>✕</button>
-        <button className="suggestion-btn suggestion-btn-ok" aria-label="Ver receta" onClick={open}>✓</button>
+        <button className="suggestion-btn suggestion-btn-ok" aria-label={openLabel} onClick={open}>✓</button>
       </div>
     </div>
   )

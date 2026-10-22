@@ -905,3 +905,12 @@ textarea:focus {
 .shop-list + .btn-primary { margin-top: 0.75rem; }
 .shop-week { display: inline-block; margin-top: 1rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.recipe-list-btn {
+  margin-top: 1rem;
+}
+.week-counter {
+  text-align: center;
+  margin: 0.75rem 0;
+}
+.week-done { margin-top: 1rem; }

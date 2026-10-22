@@ -15,6 +15,7 @@ import SearchRecipes from './screens/SearchRecipes.jsx'
 import Fridge from './screens/Fridge.jsx'
 import AddToFridge from './screens/AddToFridge.jsx'
 import Shopping from './screens/Shopping.jsx'
+import WeekDishes from './screens/WeekDishes.jsx'
 import More from './screens/More.jsx'
 
 export default function App() {
@@ -92,6 +93,7 @@ function LoggedIn({ userId }) {
         <Route path="/search" element={<SearchRecipes />} />
         <Route path="/fridge" element={<Fridge household={household.data} />} />
         <Route path="/fridge/add" element={<AddToFridge household={household.data} />} />
+        <Route path="/shopping/week" element={<WeekDishes />} />
         <Route path="/shopping" element={<Shopping household={household.data} />} />
         <Route path="/more" element={<More household={household.data} />} />
         <Route path="*" element={<Navigate to="/" replace />} />

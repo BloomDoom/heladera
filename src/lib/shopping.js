@@ -111,6 +111,11 @@ export async function addRecipeToList(recipeId, today) {
   return unwrap(supabase.rpc('add_recipe_to_list', { recipe_id: recipeId, today }))
 }
 
+// Toast text for the products a dish put on the list (names, or null when none).
+export function listedMessage(names) {
+  return names.length > 0 ? `A la lista: ${names.join(', ')}` : null
+}
+
 // Dishes 1 to 3 products away, and the last 14 days of cooked ones.
 export async function loadWeek(today) {
   const [candidates, cooked] = await Promise.all([
