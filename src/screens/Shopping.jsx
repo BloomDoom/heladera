@@ -55,11 +55,23 @@ export default function Shopping({ household }) {
     if (inflight.current > 0) pending.current = true
     else reloadRef.current()
   }
-  async function save(fn) {
+  const loadingRef = useRef(load.loading)
+  loadingRef.current = load.loading
+  const chains = useRef(new Map()) // product id -> last write, so writes for one product keep their order
+  async function save(fn, key) {
     inflight.current += 1
+    // A load already running may bring data older than this change: load again after.
+    if (loadingRef.current) pending.current = true
+    const prev = key == null ? null : chains.current.get(key)
+    const run = (async () => {
+      if (prev) await prev.catch(() => {})
+      return fn()
+    })()
+    if (key != null) chains.current.set(key, run)
     try {
-      return await fn()
+      return await run
     } finally {
+      if (key != null && chains.current.get(key) === run) chains.current.delete(key)
       inflight.current -= 1
       if (inflight.current === 0 && pending.current) {
         pending.current = false
@@ -102,10 +114,10 @@ export default function Shopping({ household }) {
   })
 
   // Runs `change` now and `write` in the background; `undo` puts the screen back if saving fails.
-  async function optimistic(change, undo, write) {
+  async function optimistic(change, undo, write, key) {
     change()
     try {
-      await save(write)
+      await save(write, key)
     } catch (error) {
       undo()
       showToast(saveErrorMessage(error))
@@ -120,12 +132,13 @@ export default function Shopping({ household }) {
         () => putRow(rowFor(product, { reason: 'habitual', checked: true })),
         () => dropRow(id),
         () => checkHabit(householdId, id, today),
+        id,
       )
     }
     const next = !entry.checked
     const flip = (value) =>
       setRows((list) => list.map((r) => (r.product_id === id ? { ...r, checked: value } : r)))
-    return optimistic(() => flip(next), () => flip(!next), () => setChecked(id, next))
+    return optimistic(() => flip(next), () => flip(!next), () => setChecked(id, next), id)
   }
 
   function remove(entry) {
@@ -135,30 +148,66 @@ export default function Shopping({ household }) {
       const snoozeRow = { product_id: id, snoozed_on: today }
       const hide = () => setSnoozes((list) => [...list.filter((s) => s.product_id !== id), snoozeRow])
       const show = () => setSnoozes((list) => list.filter((s) => s.product_id !== id))
-      return optimistic(hide, show, async () => {
-        await snooze(householdId, id, today)
-        showToast(message, () => optimistic(show, hide, () => unsnooze(id)))
-      })
+      return optimistic(
+        hide,
+        show,
+        async () => {
+          await snooze(householdId, id, today)
+          showToast(message, () => optimistic(show, hide, () => unsnooze(id), id))
+        },
+        id,
+      )
     }
     const row = rows.find((r) => r.product_id === id)
+    // A habitual product would come straight back as a suggestion: snooze it too.
+    const habitual = habitsMap.has(id)
+    const snoozeRow = { product_id: id, snoozed_on: today }
+    const hide = () => setSnoozes((list) => [...list.filter((s) => s.product_id !== id), snoozeRow])
+    const show = () => setSnoozes((list) => list.filter((s) => s.product_id !== id))
     return optimistic(
-      () => dropRow(id),
-      () => putRow(row),
+      () => {
+        dropRow(id)
+        if (habitual) hide()
+      },
+      () => {
+        putRow(row)
+        if (habitual) show()
+      },
       async () => {
+        if (habitual) await snooze(householdId, id, today)
         await removeFromList(id)
         showToast(message, () =>
-          optimistic(() => putRow(row), () => dropRow(id), () => restoreListRow(householdId, row)),
+          optimistic(
+            () => {
+              putRow(row)
+              if (habitual) show()
+            },
+            () => {
+              dropRow(id)
+              if (habitual) hide()
+            },
+            async () => {
+              if (habitual) await unsnooze(id)
+              await restoreListRow(householdId, row)
+            },
+            id,
+          ),
         )
       },
+      id,
     )
   }
 
   function add(product) {
-    if (rows.some((r) => r.product_id === product.id)) return
+    if (rows.some((r) => r.product_id === product.id)) {
+      showToast(`${product.name} ya está en la lista`)
+      return
+    }
     return optimistic(
       () => putRow(rowFor(product, { reason: 'a_mano', checked: false })),
       () => dropRow(product.id),
       () => addToList(householdId, product.id, 'a_mano', today),
+      product.id,
     )
   }
 
@@ -178,10 +227,10 @@ export default function Shopping({ household }) {
   async function store() {
     if (storing) return
     setStoring(true)
+    pending.current = true // one reload when the save settles
     try {
       const n = await save(() => storeChecked(today))
       showToast(`${n} ${plural(n, 'producto', 'productos')} a la heladera`)
-      reloadRef.current()
     } catch (error) {
       showToast(saveErrorMessage(error))
     } finally {

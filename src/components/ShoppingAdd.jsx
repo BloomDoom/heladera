@@ -11,7 +11,7 @@ export default function ShoppingAdd({ products, onPick, onCreate }) {
   return (
     <div className="shop-add">
       <label>
-        Agregar a la lista…
+        <span className="sr-only">Agregar a la lista…</span>
         <input
           type="search"
           placeholder="Agregar a la lista…"
