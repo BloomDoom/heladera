@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useLoad } from '../lib/useLoad.js'
 import { loadRecipePage, markCooked, undoCooked } from '../lib/today.js'
+import { setFavorite } from '../lib/recipes.js'
 import { finishItem, restoreItem } from '../lib/fridge.js'
 import { todayISO } from '../lib/format.js'
 import { recipeSteps } from '../lib/steps.js'
@@ -22,7 +23,29 @@ export default function Recipe({ household }) {
   const sending = useRef(false) // blocks a second tap before React re-renders
   const finishing = useRef(false) // same, for "Listo" / "Nada se acabó"
 
+  // null until the first tap: until then the loaded value is shown.
+  const [localFavorite, setLocalFavorite] = useState(null)
+  const togglingFavorite = useRef(false) // blocks a tap while the last one is saving
+
   const { recipe, items, assumedIds } = load.data ?? {}
+  const favorite = localFavorite ?? load.data?.favorite ?? false
+
+  // Optimistic: flips the star at once and puts it back if saving fails.
+  async function toggleFavorite() {
+    if (togglingFavorite.current) return
+    togglingFavorite.current = true
+    const next = !favorite
+    setLocalFavorite(next)
+    try {
+      await setFavorite(household.id, recipe.id, next)
+      if (next) showToast('Guardada en favoritas')
+    } catch (error) {
+      setLocalFavorite(!next)
+      showToast(saveErrorMessage(error))
+    } finally {
+      togglingFavorite.current = false
+    }
+  }
 
   // The recipe's products that are in the fridge, in recipe order, once each.
   function fridgeItemsOfRecipe() {
@@ -119,7 +142,25 @@ export default function Recipe({ household }) {
       <LoadState {...load} />
       {recipe && (
         <>
-          <h1>{recipe.title}</h1>
+          <div className="recipe-title">
+            <h1>{recipe.title}</h1>
+            <button
+              className="favorite-btn"
+              aria-pressed={favorite}
+              aria-label="Favorita"
+              onClick={toggleFavorite}
+            >
+              <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                <path
+                  d="M12 2.5l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.7l-6.1 3.4 1.4-6.8L2.2 9.6l6.9-.8z"
+                  fill={favorite ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
           {(recipe.minutes > 0 || recipe.servings > 0) && (
             <p className="muted recipe-meta">
               {[

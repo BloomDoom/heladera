@@ -593,6 +593,27 @@ select {
 .recipe-meta {
   margin: 0;
 }
+.recipe-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.favorite-btn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.favorite-btn[aria-pressed='true'] {
+  color: var(--primary-ink);
+}
 .recipe-ingredients {
   margin: 0;
   padding-left: 1.25rem;

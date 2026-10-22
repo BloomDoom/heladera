@@ -68,7 +68,7 @@ export async function loadRecipe(id) {
     supabase
       .from('recipes')
       .select(
-        'id, title, minutes, servings, steps, source, source_url, ingredients:recipe_ingredients(line, is_main, product_id, product:products(name))',
+        'id, household_id, title, minutes, servings, steps, source, source_url, ingredients:recipe_ingredients(line, is_main, product_id, product:products(name))',
       )
       .eq('id', id)
       .single(),
@@ -105,11 +105,17 @@ export async function loadBasics() {
 }
 
 // Everything the recipe screen needs, loaded in parallel. `assumedIds` are the
-// products taken for granted at home, so they are never "falta".
+// products taken for granted at home, so they are never "falta". `favorite`
+// says whether the household starred the recipe.
 export async function loadRecipePage(id) {
-  const [recipe, items, basics] = await Promise.all([loadRecipe(id), loadFridge(), loadBasics()])
+  const [recipe, items, basics, favoriteRow] = await Promise.all([
+    loadRecipe(id),
+    loadFridge(),
+    loadBasics(),
+    unwrap(supabase.from('favorites').select('recipe_id').eq('recipe_id', id).maybeSingle()),
+  ])
   const assumedIds = new Set(effectiveAssumed(basics.products, basics.overrides).map((p) => p.id))
-  return { recipe, items, assumedIds }
+  return { recipe, items, assumedIds, favorite: favoriteRow !== null }
 }
 
 // Marks a product as always at home (or not) for this household.

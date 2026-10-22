@@ -3,16 +3,17 @@ import { Link } from 'react-router-dom'
 import { signOut } from '../lib/supabase.js'
 import { useLoad } from '../lib/useLoad.js'
 import { loadBasics, loadHistory, setAssumed } from '../lib/today.js'
+import { loadFavorites } from '../lib/recipes.js'
 import { formatDate } from '../lib/format.js'
 import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
 import LoadState from '../components/LoadState.jsx'
 import AssumedEditor from '../components/AssumedEditor.jsx'
 
-// Basics and history, loaded in parallel.
+// Basics, history and favorites, loaded in parallel.
 async function loadMore() {
-  const [basics, history] = await Promise.all([loadBasics(), loadHistory()])
-  return { ...basics, history }
+  const [basics, history, favorites] = await Promise.all([loadBasics(), loadHistory(), loadFavorites()])
+  return { ...basics, history, favorites }
 }
 
 // The household, who's in it, what's always at home, what was cooked, and logging out.
@@ -54,6 +55,18 @@ export default function More({ household }) {
         <>
           <h2>Siempre hay en casa</h2>
           <AssumedEditor products={load.data.products} overrides={overrides} onChange={change} />
+          <h2>Favoritas</h2>
+          {load.data.favorites.length === 0 ? (
+            <p className="empty">Todavía no marcaron favoritas. Tocá la estrella en una receta.</p>
+          ) : (
+            <ul className="history-list">
+              {load.data.favorites.map((row) => (
+                <li key={row.recipe_id}>
+                  <Link to={`/recipe/${row.recipe.id}`}>{row.recipe.title}</Link>
+                </li>
+              ))}
+            </ul>
+          )}
           <h2>Lo que cocinaron</h2>
           {load.data.history.length === 0 ? (
             <p className="empty">Todavía no cocinaron nada con la app.</p>
