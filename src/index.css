@@ -376,3 +376,115 @@ input:focus-visible {
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* ───────── Cargar lo comprado */
+/* "‹ Volver" stays pinned at the top while scrolling. The negative margin
+   stretches its background band edge to edge (.screen has 1rem padding). */
+.back-link {
+  position: sticky;
+  top: env(safe-area-inset-top);
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  width: calc(100% + 2rem);
+  min-height: var(--tap);
+  margin: -1rem -1rem 0;
+  padding: 0.25rem 1rem;
+  background: var(--bg);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--primary-ink);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+select {
+  display: block;
+  width: 100%;
+  min-height: var(--tap);
+  margin-top: 0.35rem;
+  padding: 0.6rem 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 400;
+}
+
+.add-screen {
+  /* Room for the bar with "Agregar" above the tab bar. */
+  padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + 6rem);
+}
+.add-screen h2 {
+  font-size: 1.2rem;
+  margin: 1.5rem 0 0.5rem;
+}
+.add-screen input[type='search'] {
+  margin-bottom: 0.5rem;
+}
+.add-create {
+  margin-top: 1rem;
+}
+
+.tile-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: 0.5rem;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  width: 100%;
+  min-height: 64px;
+  padding: 0.5rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+.tile[aria-pressed='true'] {
+  background: var(--primary);
+  border-color: var(--primary-ink);
+  color: var(--primary-text);
+}
+.tile-present {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+.tile[aria-pressed='true'] .tile-present {
+  color: var(--primary-text);
+}
+
+/* Sticky bar just above the tab bar. */
+.add-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
+  z-index: 9;
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+.add-bar .btn-primary {
+  max-width: 38rem;
+  margin: 0 auto;
+}
+
+.new-product-cancel {
+  margin-top: 0.75rem;
+}

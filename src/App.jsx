@@ -10,6 +10,7 @@ import Login from './screens/Login.jsx'
 import NoHousehold from './screens/NoHousehold.jsx'
 import Today from './screens/Today.jsx'
 import Fridge from './screens/Fridge.jsx'
+import AddToFridge from './screens/AddToFridge.jsx'
 import Shopping from './screens/Shopping.jsx'
 import More from './screens/More.jsx'
 
@@ -83,6 +84,7 @@ function LoggedIn({ userId }) {
       <Routes>
         <Route path="/" element={<Today />} />
         <Route path="/fridge" element={<Fridge household={household.data} />} />
+        <Route path="/fridge/add" element={<AddToFridge household={household.data} />} />
         <Route path="/shopping" element={<Shopping />} />
         <Route path="/more" element={<More household={household.data} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
