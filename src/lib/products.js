@@ -116,3 +116,9 @@ export function groupByShop(products) {
     products: shown(products).filter((p) => shop.categories.includes(p.category)).sort(byName),
   })).filter((g) => g.products.length > 0)
 }
+
+// Products the household has at hand: the product default, unless it overrode it.
+export function effectiveAssumed(products, overrides) {
+  const override = new Map(overrides.map((o) => [o.product_id, o.assumed]))
+  return products.filter((p) => override.get(p.id) ?? p.assumed).sort(byName)
+}

@@ -10,6 +10,7 @@ import {
   findByName,
   frequentProducts,
   groupByShop,
+  effectiveAssumed,
 } from '../products.js'
 
 let nextId = 1
@@ -110,4 +111,15 @@ test('every dictionary category has a CATEGORIES entry', () => {
   for (const code of DEFAULT_FREQUENT) assert.ok(codes.includes(code), code)
   const shopped = SHOPS.flatMap((s) => s.categories).sort()
   assert.deepEqual(shopped, [...keys].sort())
+})
+
+test('effectiveAssumed applies overrides and sorts by name', () => {
+  const sal = { ...p('sal', 'Sal', 'condimento'), assumed: true }
+  const aceite = { ...p('aceite', 'Aceite', 'almacen'), assumed: true }
+  const cebolla = { ...p('cebolla', 'Cebolla', 'verdura'), assumed: false }
+  const overrides = [
+    { product_id: aceite.id, assumed: false },
+    { product_id: cebolla.id, assumed: true },
+  ]
+  assert.deepEqual(effectiveAssumed([sal, aceite, cebolla], overrides), [cebolla, sal])
 })
