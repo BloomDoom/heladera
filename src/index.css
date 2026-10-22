@@ -543,3 +543,95 @@ select {
     transition: none !important;
   }
 }
+
+/* ───────── Receta */
+.recipe-screen {
+  /* Room for the bar with "Lo cocinamos" above the tab bar. */
+  padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + 6rem);
+}
+.recipe-screen h2 {
+  font-size: 1.2rem;
+  margin: 1.5rem 0 0.5rem;
+}
+.recipe-screen h3 {
+  font-size: 1rem;
+  margin: 1rem 0 0.25rem;
+  color: var(--muted);
+}
+.recipe-meta {
+  margin: 0;
+}
+.recipe-ingredients {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+.recipe-ingredients li {
+  margin-bottom: 0.25rem;
+}
+.recipe-missing {
+  color: var(--warn);
+  font-weight: 600;
+}
+.recipe-steps p {
+  margin: 0 0 0.75rem;
+}
+.recipe-source {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+}
+.recipe-source a {
+  color: var(--primary-ink);
+}
+
+/* "¿Se acabó algo?": covers the screen, the sheet sits at the bottom. */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.6);
+}
+.sheet {
+  width: 100%;
+  max-width: 40rem;
+  max-height: 85dvh;
+  overflow-y: auto;
+  margin: 0 auto;
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.sheet h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.3rem;
+}
+.sheet:focus {
+  outline: none; /* focus lands here only to start the screen reader on the title */
+}
+.sheet-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+.sheet-check {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: var(--tap);
+  margin: 0;
+  font-weight: 400;
+  cursor: pointer;
+}
+.sheet-check input {
+  width: 1.5rem;
+  min-height: 1.5rem;
+  height: 1.5rem;
+  margin: 0;
+  flex: none;
+  accent-color: var(--primary);
+}
+.sheet .btn-secondary {
+  margin-top: 0.5rem;
+}

@@ -9,6 +9,7 @@ import TabBar from './components/TabBar.jsx'
 import Login from './screens/Login.jsx'
 import NoHousehold from './screens/NoHousehold.jsx'
 import Today from './screens/Today.jsx'
+import Recipe from './screens/Recipe.jsx'
 import Fridge from './screens/Fridge.jsx'
 import AddToFridge from './screens/AddToFridge.jsx'
 import Shopping from './screens/Shopping.jsx'
@@ -83,6 +84,7 @@ function LoggedIn({ userId }) {
     <>
       <Routes>
         <Route path="/" element={<Today household={household.data} />} />
+        <Route path="/recipe/:id" element={<Recipe household={household.data} />} />
         <Route path="/fridge" element={<Fridge household={household.data} />} />
         <Route path="/fridge/add" element={<AddToFridge household={household.data} />} />
         <Route path="/shopping" element={<Shopping />} />
