@@ -92,7 +92,7 @@ function LoggedIn({ userId }) {
         <Route path="/search" element={<SearchRecipes />} />
         <Route path="/fridge" element={<Fridge household={household.data} />} />
         <Route path="/fridge/add" element={<AddToFridge household={household.data} />} />
-        <Route path="/shopping" element={<Shopping />} />
+        <Route path="/shopping" element={<Shopping household={household.data} />} />
         <Route path="/more" element={<More household={household.data} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
