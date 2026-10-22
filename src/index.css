@@ -635,3 +635,67 @@ select {
 .sheet .btn-secondary {
   margin-top: 0.5rem;
 }
+
+/* ───────── Más: basics and history */
+.more-screen h2 {
+  font-size: 1.2rem;
+  margin: 1.5rem 0 0.5rem;
+}
+.more-logout {
+  margin-top: 2rem;
+}
+.basics-chips,
+.basics-results,
+.history-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+.basics-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.basic-chip {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding-left: 0.9rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  font-weight: 600;
+}
+.basic-chip button {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.more-screen input[type='search'] {
+  margin-bottom: 0.5rem;
+}
+.basics-results button,
+.history-list a {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.basics-results li,
+.history-list li {
+  margin-bottom: 0.5rem;
+}
+.history-list a {
+  color: var(--primary-ink);
+}

@@ -80,3 +80,22 @@ export async function loadRecipePage(id) {
   const assumedIds = new Set(effectiveAssumed(basics.products, basics.overrides).map((p) => p.id))
   return { recipe, items, assumedIds }
 }
+
+// Marks a product as always at home (or not) for this household.
+export async function setAssumed(householdId, productId, assumed) {
+  return unwrap(
+    supabase.from('assumed_overrides').upsert({ household_id: householdId, product_id: productId, assumed }),
+  )
+}
+
+// The last 30 dishes the household cooked, newest first.
+export async function loadHistory() {
+  return unwrap(
+    supabase
+      .from('cooked')
+      .select('id, cooked_on, recipe:recipes(id, title)')
+      .order('cooked_on', { ascending: false })
+      .order('id', { ascending: false })
+      .limit(30),
+  )
+}
