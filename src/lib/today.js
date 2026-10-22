@@ -4,12 +4,24 @@ import { loadFridge } from './fridge.js'
 import { addDays } from './format.js'
 import { effectiveAssumed } from './products.js'
 
+const PAGE = 1000 // PostgREST never returns more than this per request
+
+// The RPC read page by page, so a big catalog is never cut at 1,000 rows.
+async function readCandidates() {
+  const all = []
+  for (let from = 0; ; from += PAGE) {
+    const page = await unwrap(supabase.rpc('recipe_candidates').range(from, from + PAGE - 1))
+    all.push(...page)
+    if (page.length < PAGE) return all
+  }
+}
+
 // Everything the "Hoy" screen needs, loaded in parallel: the recipes that can
 // be cooked (or almost), the fridge, the last 180 days of cooked dishes and
 // the last 14 days of skipped ones.
 export async function loadSuggestionsData(today) {
   const [candidates, items, cooked, rejections] = await Promise.all([
-    unwrap(supabase.rpc('recipe_candidates')),
+    readCandidates(),
     loadFridge(),
     unwrap(
       supabase.from('cooked').select('recipe_id, cooked_on').gte('cooked_on', addDays(today, -180)),

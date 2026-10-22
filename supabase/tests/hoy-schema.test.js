@@ -140,6 +140,14 @@ test('basics overrides belong to the household', async () => {
   await assert.rejects(override(db, u.a1, 2, ids.aceite, false), /row-level security/)
 })
 
+test('recipe_candidates returns rows ordered by recipe id', async () => {
+  const { db, u } = await setup()
+  const list = await candidates(db, u.a1)
+  assert.ok(list.length > 1)
+  const ids = list.map((c) => Number(c.recipe_id))
+  assert.deepEqual(ids, [...ids].sort((a, b) => a - b))
+})
+
 test('anon reads nothing', async () => {
   const { db } = await setup()
   await assert.rejects(as(db, null, 'select * from heladera.cooked'), /permission denied/)

@@ -173,13 +173,13 @@ returns table (
 ) language sql stable security invoker set search_path = '' as $$
   with fridge as (
     select product_id from heladera.fridge_items
-    where household_id = heladera.my_household_id()
+    where household_id = (select heladera.my_household_id())
   ),
   basics as (
     select p.id as product_id
     from heladera.products p
     left join heladera.assumed_overrides o
-      on o.product_id = p.id and o.household_id = heladera.my_household_id()
+      on o.product_id = p.id and o.household_id = (select heladera.my_household_id())
     where coalesce(o.assumed, p.assumed)
   ),
   home as (
@@ -207,6 +207,7 @@ returns table (
   join heladera.recipes r on r.id = pr.recipe_id
   left join heladera.products mp on mp.id = pr.missing_id
   where pr.main_missing = 0 and pr.minor_missing <= 1 and pr.used is not null
+  order by r.id
 $$;
 revoke execute on function heladera.recipe_candidates() from public, anon;
 grant execute on function heladera.recipe_candidates() to authenticated;
