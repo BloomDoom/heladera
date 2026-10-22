@@ -22,7 +22,8 @@ export function habits(purchases) {
     const days = [...set].sort()
     const gaps = days.slice(1).map((d, i) => daysBetween(days[i], d)).sort((a, b) => a - b)
     // Lower middle value when the count is even.
-    const interval = Math.max(1, gaps[Math.ceil(gaps.length / 2) - 1])
+    // Days are distinct, so every gap is at least 1.
+    const interval = gaps[Math.ceil(gaps.length / 2) - 1]
     result.set(product_id, { product_id, interval, last: days[days.length - 1] })
   }
   return result
@@ -68,7 +69,7 @@ export function reasonText(row, habitsMap) {
 
 const byName = (a, b) => a.name.localeCompare(b.name, 'es')
 
-// Entries: { product_id, name, category, reason, stored, checked }.
+// Entries: { product_id, name, category, reasonText, checked, stored }.
 export function buildList({ rows, due, products, habitsMap }) {
   const productById = new Map(products.map((p) => [p.id, p]))
 
@@ -76,7 +77,7 @@ export function buildList({ rows, due, products, habitsMap }) {
     product_id: row.product_id,
     name: row.product.name,
     category: row.product.category,
-    reason: reasonText(row, habitsMap),
+    reasonText: reasonText(row, habitsMap),
     stored: true,
     checked: row.checked,
   }))
@@ -87,7 +88,7 @@ export function buildList({ rows, due, products, habitsMap }) {
       product_id: h.product_id,
       name: product.name,
       category: product.category,
-      reason: habitText(h.interval),
+      reasonText: habitText(h.interval),
       stored: false,
       checked: false,
     }]
@@ -99,6 +100,11 @@ export function buildList({ rows, due, products, habitsMap }) {
     label: c.label,
     entries: open.filter((e) => e.category === c.key).sort(byName),
   })).filter((g) => g.entries.length > 0)
+
+  // Entries with a category we do not know still show up.
+  const known = new Set(CATEGORIES.map((c) => c.key))
+  const others = open.filter((e) => !known.has(e.category)).sort(byName)
+  if (others.length > 0) groups.push({ key: 'otros', label: 'Otros', entries: others })
 
   return { groups, cart: stored.filter((e) => e.checked).sort(byName) }
 }

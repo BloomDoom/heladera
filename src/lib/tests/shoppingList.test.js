@@ -1,5 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { dailyOrder } from '../suggest.js'
 import { habits, habitText, dueHabits, reasonText, buildList, rankWeek } from '../shoppingList.js'
 
 const TODAY = '2026-10-22'
@@ -83,9 +84,10 @@ test('buildList groups by category and puts checked in the cart', () => {
     ['Panadería', ['Pan']],
   ])
   assert.deepEqual(cart.map((e) => e.name), ['Tomate'])
+  assert.equal(groups[1].entries[0].reasonText, null)
   const pan = groups[2].entries[0]
   assert.equal(pan.stored, false)
-  assert.equal(pan.reason, 'Lo comprás cada pocos días')
+  assert.equal(pan.reasonText, 'Lo comprás cada pocos días')
 })
 
 test('rankWeek drops recent dishes and prefers favorites', () => {
@@ -96,4 +98,44 @@ test('rankWeek drops recent dishes and prefers favorites', () => {
   const cooked = [{ recipe_id: 'recent', cooked_on: '2026-10-19' }]
   const out = rankWeek({ candidates, cooked, today: TODAY }).map((x) => x.recipe_id)
   assert.deepEqual(out, ['fav', 'plain'])
+})
+
+test('even-count median takes the lower middle', () => {
+  // gaps 7, 30
+  const h = habits(buys('a', '2026-08-01', '2026-08-08', '2026-09-07')).get('a')
+  assert.equal(h.interval, 7)
+})
+
+test('a snooze for another product does not hide the habit', () => {
+  assert.equal(due({ snoozes: [{ product_id: 'z', snoozed_on: TODAY }] }).length, 1)
+})
+
+test('buildList sorts by name within a group and keeps unknown categories', () => {
+  const r = (id, name, category) => ({
+    product_id: id, reason: 'se_acabo', recipe_id: null, added_on: TODAY, checked: false, product: { id, name, category }, recipe: null,
+  })
+  const rows = [r('1', 'Zanahoria', 'verdura'), r('2', 'Ajo', 'verdura'), r('3', 'Zeta', 'raro'), r('4', 'Alfa', 'raro')]
+  const { groups } = buildList({ rows, due: [], products: [], habitsMap: new Map() })
+  assert.deepEqual(groups.map((g) => [g.key, g.entries.map((e) => e.name)]), [
+    ['verdura', ['Ajo', 'Zanahoria']],
+    ['otros', ['Alfa', 'Zeta']],
+  ])
+  assert.equal(groups[1].label, 'Otros')
+  assert.equal(groups[0].entries[0].reasonText, 'Se acabó')
+})
+
+test('rankWeek: own ranks like favorite, 14-day boundary, ties by dailyOrder', () => {
+  const c = (id, extra = {}) => ({ recipe_id: id, title: id, minutes: 30, missing_names: [], own: false, favorite: false, ...extra })
+  const ids = (o) => o.map((x) => x.recipe_id)
+  assert.deepEqual(ids(rankWeek({ candidates: [c('plain'), c('mine', { own: true })], cooked: [], today: TODAY })), ['mine', 'plain'])
+
+  const cooked = [
+    { recipe_id: 'a', cooked_on: '2026-10-09' }, // 13 days ago
+    { recipe_id: 'b', cooked_on: '2026-10-08' }, // 14 days ago
+  ]
+  assert.deepEqual(ids(rankWeek({ candidates: [c('a'), c('b')], cooked, today: TODAY })), ['b'])
+
+  const tied = rankWeek({ candidates: [c('x'), c('y'), c('z')], cooked: [], today: TODAY })
+  const expected = ['x', 'y', 'z'].sort((p, q) => dailyOrder(p, TODAY) - dailyOrder(q, TODAY))
+  assert.deepEqual(ids(tied), expected)
 })
