@@ -1,17 +1,24 @@
 // Product helpers: categories, search, frequent products and shop groups.
 
+// Places of the kitchen.
+export const PLACES = [
+  { key: 'fridge', label: 'Heladera' },
+  { key: 'freezer', label: 'Freezer' },
+  { key: 'pantry', label: 'Alacena' },
+]
+
 // Categories of the product dictionary, with defaults for new products.
 export const CATEGORIES = [
   { key: 'verdura', label: 'Verdura', storage: 'fridge', shelf_days: 7 },
   { key: 'fruta', label: 'Fruta', storage: 'fridge', shelf_days: 7 },
-  { key: 'carne', label: 'Carne', storage: 'fridge', shelf_days: 3 },
-  { key: 'pollo', label: 'Pollo', storage: 'fridge', shelf_days: 2 },
-  { key: 'pescado', label: 'Pescado', storage: 'fridge', shelf_days: 2 },
+  { key: 'carne', label: 'Carne', storage: 'freezer', shelf_days: 3 },
+  { key: 'pollo', label: 'Pollo', storage: 'freezer', shelf_days: 2 },
+  { key: 'pescado', label: 'Pescado', storage: 'freezer', shelf_days: 2 },
   { key: 'fiambre', label: 'Fiambre', storage: 'fridge', shelf_days: 7 },
   { key: 'lacteo', label: 'Lácteo', storage: 'fridge', shelf_days: 10 },
   { key: 'huevo', label: 'Huevos', storage: 'fridge', shelf_days: 21 },
   { key: 'panificado', label: 'Panadería', storage: 'pantry', shelf_days: 4 },
-  { key: 'congelado', label: 'Congelado', storage: 'fridge', shelf_days: 90 },
+  { key: 'congelado', label: 'Congelado', storage: 'freezer', shelf_days: 90 },
   { key: 'almacen', label: 'Almacén', storage: 'pantry', shelf_days: 180 },
   { key: 'condimento', label: 'Condimento', storage: 'pantry', shelf_days: 365 },
   { key: 'bebida', label: 'Bebida', storage: 'pantry', shelf_days: 180 },

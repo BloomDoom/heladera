@@ -121,3 +121,15 @@ test('favorites and own recipes go up', () => {
   assert.deepEqual(both[0].reasons, ['Es una receta de ustedes', 'No lo cocinan hace meses'])
   assert.equal(both[0].score, 4)
 })
+
+test('freezer reason on the card', () => {
+  const mk = (place) => [
+    { ...item(1, 'Pollo', 12, '2026-10-20'), place },
+    { ...item(2, 'Tomate', 12, '2026-10-20'), place: 'fridge' },
+  ]
+  const [frozen] = rank({ candidates: [cand(1, [1, 2])], items: mk('freezer') })
+  const [fresh] = rank({ candidates: [cand(1, [1, 2])], items: mk('fridge') })
+  assert.equal(frozen.reasons.at(-1), 'Pollo está en el freezer')
+  assert.equal(frozen.score, fresh.score)
+  assert.ok(!fresh.reasons.some((r) => r.includes('freezer')))
+})
