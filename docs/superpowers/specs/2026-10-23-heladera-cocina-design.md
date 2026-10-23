@@ -107,7 +107,7 @@ Success: opening the app feels like opening the right door of your kitchen.
 6. **The freezer reason on Hoy cards is one line** naming every used Freezer item:
    - one item: `Pollo está en el freezer`.
    - more than one: `Pollo y carne picada están en el freezer`.
-7. **Freezer items are part of "¿Se acabó algo?"** after cooking, so cooking can use them up. They are also part of "Se acabó" on the Cocina screen.
+7. **Items from all three places are part of "¿Se acabó algo?"** after cooking (user's decision: Alacena too), so cooking can use them up. They are also part of "Se acabó" on the Cocina screen.
 
 ## 5. Constraints
 
