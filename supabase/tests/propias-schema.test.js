@@ -23,8 +23,8 @@ async function setup() {
     from (values ('huevo', true), ('papa', true), ('sal', false)) i(code, is_main)
     join heladera.products p on p.code = i.code
     cross join heladera.recipes r where r.title = 'tortilla';
-    insert into heladera.fridge_items (household_id, product_id, added_on)
-    select 1, id, '2026-10-22' from heladera.products where code in ('huevo', 'papa');
+    insert into heladera.fridge_items (household_id, product_id, added_on, place)
+    select 1, id, '2026-10-22', 'fridge' from heladera.products where code in ('huevo', 'papa');
   `)
   await db.query(
     `insert into heladera.household_members (user_id, household_id, display_name)

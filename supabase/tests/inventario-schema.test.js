@@ -70,7 +70,7 @@ test('fridge items only accept products the household can see', async () => {
   const { db, u, otra } = await setup()
   await assert.rejects(add(db, u.a1, [otra], '2026-10-22'), /row-level security/)
   await assert.rejects(
-    as(db, u.a1, "insert into heladera.fridge_items (household_id, product_id, added_on) values (1, $1, '2026-10-22')", [otra]),
+    as(db, u.a1, "insert into heladera.fridge_items (household_id, product_id, added_on, place) values (1, $1, '2026-10-22', 'fridge')", [otra]),
     /row-level security/,
   )
 })

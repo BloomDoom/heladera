@@ -52,7 +52,7 @@ test('dictionary is valid', () => {
     assert.ok(!codes.has(p.code), `repeated code ${p.code}`)
     codes.add(p.code)
     assert.ok(CATEGORIES.includes(p.category), `${p.code}: category ${p.category}`)
-    assert.ok(['fridge', 'pantry'].includes(p.storage), `${p.code}: storage`)
+    assert.ok(['fridge', 'freezer', 'pantry'].includes(p.storage), `${p.code}: storage`)
     assert.ok(Number.isInteger(p.shelf_days) && p.shelf_days > 0, `${p.code}: shelf_days`)
     assert.equal(typeof p.minor, 'boolean', `${p.code}: minor`)
     for (const s of [p.name, ...p.synonyms]) {
