@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLoad } from '../lib/useLoad.js'
 import { loadAddData, addToFridge, createProduct } from '../lib/fridge.js'
-import { searchProducts, frequentProducts, groupByShop, PLACES } from '../lib/products.js'
+import { searchProducts, frequentProducts, groupByShop, PLACES, nextPlace, placeChoices } from '../lib/products.js'
 import { todayISO, plural } from '../lib/format.js'
 import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
@@ -36,20 +36,14 @@ export default function AddToFridge({ household }) {
       return next
     })
     setChosen((c) => {
-      if (!(id in c)) return c
-      const { [id]: _forgotten, ...rest } = c
+      const rest = { ...c }
+      delete rest[id]
       return rest
     })
   }
 
   function placeOf(product) {
     return chosen[product.id] ?? product.storage ?? 'fridge'
-  }
-
-  function nextPlace(product) {
-    const keys = PLACES.map((p) => p.key)
-    const next = keys[(keys.indexOf(placeOf(product)) + 1) % keys.length]
-    setChosen((c) => ({ ...c, [product.id]: next }))
   }
 
   function select(id) {
@@ -76,11 +70,7 @@ export default function AddToFridge({ household }) {
     sending.current = true
     setSaving(true)
     try {
-      const places = {}
-      for (const p of products) {
-        if (selected.has(p.id) && placeOf(p) !== (p.storage ?? 'fridge')) places[p.id] = placeOf(p)
-      }
-      await addToFridge([...selected], todayISO(), places)
+      await addToFridge([...selected], todayISO(), placeChoices(selected, chosen, new Map(products.map((p) => [p.id, p]))))
     } catch (error) {
       showToast(saveErrorMessage(error))
       sending.current = false
@@ -110,7 +100,7 @@ export default function AddToFridge({ household }) {
   }
 
   return (
-    <main className="screen add-screen">
+    <main className={`screen add-screen${selected.size > 0 ? ' add-screen--has-places' : ''}`}>
       <BackButton fallback="/fridge" />
       <h1>Cargar lo comprado</h1>
       <LoadState {...load} />
@@ -151,31 +141,32 @@ export default function AddToFridge({ household }) {
               ))}
             </>
           )}
-          {selected.size > 0 && (
-            <section className="add-places">
-              <h2>Van a:</h2>
-              <ul>
-                {products
-                  .filter((p) => selected.has(p.id))
-                  .map((p) => {
-                    const label = PLACES.find((pl) => pl.key === placeOf(p))?.label
-                    return (
-                      <li key={p.id}>
-                        <span>{p.name}</span>
-                        <button
-                          className="place-btn"
-                          aria-label={`${p.name}: ${label}. Cambiar lugar`}
-                          onClick={() => nextPlace(p)}
-                        >
-                          {label}
-                        </button>
-                      </li>
-                    )
-                  })}
-              </ul>
-            </section>
-          )}
           <div className="add-bar">
+            {selected.size > 0 && (
+              <section className="add-places">
+                <h2>Van a:</h2>
+                <ul>
+                  {products
+                    .filter((p) => selected.has(p.id))
+                    .map((p) => {
+                      const label = PLACES.find((pl) => pl.key === placeOf(p))?.label
+                      return (
+                        <li key={p.id}>
+                          <span>{p.name}</span>
+                          <button
+                            type="button"
+                            className="place-btn"
+                            aria-label={`${p.name}: ${label}. Cambiar lugar`}
+                            onClick={() => setChosen((c) => ({ ...c, [p.id]: nextPlace(placeOf(p)) }))}
+                          >
+                            {label}
+                          </button>
+                        </li>
+                      )
+                    })}
+                </ul>
+              </section>
+            )}
             <button className="btn-primary" disabled={selected.size === 0 || saving} onClick={submit}>
               {selected.size === 0 ? 'Agregar' : `Agregar ${plural(selected.size, 'producto', 'productos')}`}
             </button>

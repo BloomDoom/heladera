@@ -3,6 +3,8 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import {
   CATEGORIES,
+  nextPlace,
+  placeChoices,
   DEFAULT_FREQUENT,
   SHOPS,
   normalizeText,
@@ -126,4 +128,21 @@ test('effectiveAssumed applies overrides and sorts by name', () => {
     { product_id: cebolla.id, assumed: true },
   ]
   assert.deepEqual(effectiveAssumed([sal, aceite, cebolla], overrides), [cebolla, sal])
+})
+
+test('nextPlace cycles fridge, freezer, pantry', () => {
+  assert.equal(nextPlace('fridge'), 'freezer')
+  assert.equal(nextPlace('freezer'), 'pantry')
+  assert.equal(nextPlace('pantry'), 'fridge')
+})
+
+test('placeChoices keeps only choices that differ from storage', () => {
+  const byId = new Map([
+    [1, { id: 1, storage: 'fridge' }],
+    [2, { id: 2, storage: 'pantry' }],
+    [3, { id: 3 }],
+  ])
+  const chosen = { 1: 'freezer', 2: 'pantry', 3: 'fridge', 9: 'freezer' }
+  assert.deepEqual(placeChoices([1, 2, 3], chosen, byId), { 1: 'freezer' })
+  assert.deepEqual(placeChoices([3], { 3: 'pantry' }, byId), { 3: 'pantry' })
 })

@@ -7,6 +7,23 @@ export const PLACES = [
   { key: 'pantry', label: 'Alacena' },
 ]
 
+// The place after this one when tapping a place label: fridge, freezer, pantry, fridge...
+export function nextPlace(place) {
+  const i = PLACES.findIndex((p) => p.key === place)
+  return PLACES[(i + 1) % PLACES.length].key
+}
+
+// Only the ids whose chosen place differs from their usual storage, as { id: place }.
+export function placeChoices(selectedIds, chosen, productsById) {
+  const out = {}
+  for (const id of selectedIds) {
+    const usual = productsById.get(id)?.storage ?? 'fridge'
+    const place = chosen[id] ?? usual
+    if (place !== usual) out[id] = place
+  }
+  return out
+}
+
 // Categories of the product dictionary, with defaults for new products.
 export const CATEGORIES = [
   { key: 'verdura', label: 'Verdura', storage: 'fridge', shelf_days: 7 },

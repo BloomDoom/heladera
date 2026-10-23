@@ -532,6 +532,19 @@ select {
   color: var(--primary-text);
 }
 
+.add-screen--has-places {
+  padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + 6rem + 35dvh);
+}
+.add-places {
+  max-height: 35dvh;
+  overflow-y: auto;
+  max-width: 38rem;
+  margin: 0 auto 0.5rem;
+}
+.add-places h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
 .add-places ul {
   list-style: none;
   padding: 0;
