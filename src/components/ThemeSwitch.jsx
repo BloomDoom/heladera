@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { currentTheme, saveTheme, applyTheme } from '../lib/theme.js'
 
 const OPTIONS = [
-  { key: 'light', label: 'Puerta blanca' },
-  { key: 'dark', label: 'Pantalla' },
+  { key: 'light', label: 'Claro' },
+  { key: 'dark', label: 'Oscuro' },
 ]
 
 // Reading localStorage itself can throw (blocked site data): then there is none.
@@ -15,7 +15,7 @@ function storage() {
   }
 }
 
-// "Puerta blanca" or "Pantalla": changes the whole app at once and is
+// "Claro" or "Oscuro": changes the whole app at once and is
 // remembered on this phone.
 export default function ThemeSwitch() {
   const [theme, setTheme] = useState(() => currentTheme())

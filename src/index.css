@@ -287,6 +287,9 @@ input:focus {
   height: 1.55em;
   flex: none;
 }
+.logo-light {
+  width: 0.97em; /* the Claro drawing is narrower (56x90) */
+}
 .logo-name {
   font-weight: 800;
   letter-spacing: -0.03em;

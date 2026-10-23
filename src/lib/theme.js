@@ -1,5 +1,6 @@
-// Light ("Puerta blanca") or dark ("Pantalla"). Each phone keeps its own
-// choice in localStorage; the app opens light until someone changes it.
+// Light ("Claro": the white fridge door) or dark ("Oscuro": the grey fridge
+// with a display). Each phone keeps its own choice in localStorage; the app
+// opens light until someone changes it.
 
 export const THEMES = ['light', 'dark']
 export const STORAGE_KEY = 'heladera-theme'
