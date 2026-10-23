@@ -261,11 +261,31 @@ input:focus {
 }
 
 .login-logo {
-  display: block;
-  width: 96px;
-  height: 96px;
-  margin: 0 auto 1rem;
-  border-radius: 22px;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 2.2rem;
+}
+
+/* ───────── Logo: the fridge mark and the name */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+}
+.logo-mark {
+  width: 1.15em;
+  height: 1.55em;
+  flex: none;
+}
+.logo-name {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+[data-theme='dark'] .logo-light,
+:root:not([data-theme='dark']) .logo-dark {
+  display: none;
 }
 
 /* ───────── Offline message */

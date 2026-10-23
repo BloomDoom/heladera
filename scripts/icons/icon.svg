@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#fbfbfa"/>
+  <!-- The 30x40 logo mark, scaled 9x and centered (270x360). -->
+  <g transform="translate(121 76) scale(9)">
+    <rect x="2" y="2" width="26" height="36" rx="5" fill="#ffffff" stroke="#26292c" stroke-width="2.4"/>
+    <path d="M2 14H28" stroke="#26292c" stroke-width="2.4"/>
+    <path d="M22 6V10M22 18V28" stroke="#9aa0a6" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="10" cy="24" r="4" fill="#c03a2b"/>
+  </g>
+</svg>
