@@ -915,6 +915,9 @@ select {
   font-size: 1.2rem;
   margin: 1.5rem 0 0.5rem;
 }
+.theme-switch {
+  grid-template-columns: repeat(2, 1fr);
+}
 .more-logout {
   margin-top: 2rem;
 }
