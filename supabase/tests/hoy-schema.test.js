@@ -34,8 +34,8 @@ async function setup() {
     ) i(title, code, is_main)
     join heladera.recipes r on r.title = i.title
     join heladera.products p on p.code = i.code;
-    insert into heladera.fridge_items (household_id, product_id, added_on)
-    select f.hid, p.id, '2026-10-22'
+    insert into heladera.fridge_items (household_id, product_id, added_on, place)
+    select f.hid, p.id, '2026-10-22', 'fridge'
     from (values (1, 'huevo'), (1, 'papa'), (2, 'cebolla'), (2, 'perejil'), (2, 'oregano'), (2, 'papa')) f(hid, code)
     join heladera.products p on p.code = f.code;
   `)

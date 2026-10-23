@@ -248,7 +248,7 @@ export default function Shopping({ household }) {
         await Promise.allSettled([...chains.current.values()])
         return storeChecked(today)
       })
-      showToast(`${n} ${plural(n, 'producto', 'productos')} a la heladera`)
+      showToast(`${n} ${plural(n, 'producto', 'productos')} a la cocina`)
     } catch (error) {
       showToast(saveErrorMessage(error))
     } finally {
@@ -300,7 +300,7 @@ export default function Shopping({ household }) {
                 ))}
               </ul>
               <button className="btn-primary" onClick={store} disabled={storing}>
-                Guardar {cart.length} en la heladera
+                Guardar {cart.length} en la cocina
               </button>
             </section>
           )}

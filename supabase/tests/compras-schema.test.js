@@ -23,8 +23,8 @@ async function setup() {
     from (values ('huevo', true), ('papa', true), ('cebolla', false), ('sal', false)) i(code, is_main)
     join heladera.products p on p.code = i.code
     cross join heladera.recipes r where r.title = 'tortilla';
-    insert into heladera.fridge_items (household_id, product_id, added_on)
-    select 1, id, '2026-10-22' from heladera.products where code = 'huevo';
+    insert into heladera.fridge_items (household_id, product_id, added_on, place)
+    select 1, id, '2026-10-22', 'fridge' from heladera.products where code = 'huevo';
   `)
   await db.query(
     `insert into heladera.household_members (user_id, household_id, display_name)
@@ -57,7 +57,7 @@ test('finishing adds to the list once', async () => {
   assert.equal(l.length, 1)
   assert.equal(String(l[0].product_id), String(ids.huevo))
   assert.equal(l[0].reason, 'se_acabo')
-  await as(db, u.a1, "insert into heladera.fridge_items (household_id, product_id, added_on) values (1, $1, '2026-10-26')", [ids.huevo])
+  await as(db, u.a1, "insert into heladera.fridge_items (household_id, product_id, added_on, place) values (1, $1, '2026-10-26', 'fridge')", [ids.huevo])
   const again = await as(db, u.a1, "select heladera.finish_fridge_item($1, '2026-10-27') as ok", [ids.huevo])
   assert.equal(again.rows[0].ok, false)
   assert.equal((await list(db)).length, 1)
@@ -216,7 +216,7 @@ test('migration matches schema.sql', async () => {
     published: (await db.query(`select schemaname, tablename from pg_publication_tables
       where pubname = 'supabase_realtime' order by 1, 2`)).rows,
   })
-  const full = await newDb(ZONA_FIT + '/schema.sql', 'supabase/schema.sql')
+  const full = await newDb(ZONA_FIT + '/schema.sql', 'supabase/tests/fixtures/heladera-schema-stage3.sql')
   const migrated = await newDb(
     ZONA_FIT + '/schema.sql',
     'supabase/tests/fixtures/heladera-schema-stage2d.sql',

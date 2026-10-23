@@ -60,7 +60,7 @@ create table heladera.products (
   household_id bigint references heladera.households(id),
   name         text not null,
   category     text not null,
-  storage      text not null check (storage in ('fridge', 'pantry')),
+  storage      text not null check (storage in ('fridge', 'freezer', 'pantry')),
   shelf_days   int check (shelf_days > 0),           -- typical days it lasts
   assumed      boolean not null default false,       -- always there for recipes (sal, aceite…)
   synonyms     text[] not null default '{}',
@@ -98,15 +98,29 @@ create table heladera.recipe_ingredients (
 
 
 -- ───────────────────────── Fridge (heladera) and purchases (compras)
--- What a household has right now: one row per product. expires_on is set
--- by hand when the default (added_on + shelf_days) is wrong.
+-- What a household has right now: one row per product. place is where it
+-- is: fridge, freezer or pantry. expires_on is set by hand when the default
+-- (added_on + shelf_days) is wrong; the freezer has none.
 create table heladera.fridge_items (
   household_id bigint not null references heladera.households(id),
   product_id   bigint not null references heladera.products(id),
   added_on     date not null,
   expires_on   date,
+  place        text not null check (place in ('fridge', 'freezer', 'pantry')),
   primary key (household_id, product_id)
 );
+
+-- An insert without a place takes the product's usual place.
+create function heladera.fill_place() returns trigger language plpgsql security invoker set search_path = '' as $$
+begin
+  if new.place is null then
+    select p.storage into new.place from heladera.products p where p.id = new.product_id;
+  end if;
+  return new;
+end $$;
+revoke execute on function heladera.fill_place() from public, anon;
+create trigger fridge_items_fill_place before insert on heladera.fridge_items
+  for each row execute function heladera.fill_place();
 
 -- One row per product bought, kept after it leaves the fridge.
 create table heladera.purchases (
@@ -140,16 +154,20 @@ create table heladera.shopping_snoozes (
 
 -- Adds products to the fridge of the logged-in user's household. today
 -- comes from the client: the database runs in UTC, the household does not.
--- Adding a product that is already there renews it, and takes it off the
--- shopping list.
-create function heladera.add_to_fridge(product_ids bigint[], today date)
+-- places maps a product id (as text) to where it goes: fridge, freezer or
+-- pantry; a product it leaves out goes to its usual place (products.storage).
+-- Adding a product that is already there renews it (in the chosen place),
+-- and takes it off the shopping list.
+create function heladera.add_to_fridge(product_ids bigint[], today date, places jsonb default '{}')
 returns void language sql security invoker set search_path = '' as $$
+  -- Unknown or invisible ids are still rejected by the purchases insert (FK/RLS).
   with ids as (select distinct unnest(product_ids) as product_id),
   added as (
-    insert into heladera.fridge_items (household_id, product_id, added_on)
-    select heladera.my_household_id(), product_id, today from ids
+    insert into heladera.fridge_items (household_id, product_id, added_on, place)
+    select heladera.my_household_id(), i.product_id, today, coalesce(places ->> i.product_id::text, p.storage)
+    from ids i join heladera.products p on p.id = i.product_id
     on conflict (household_id, product_id)
-      do update set added_on = excluded.added_on, expires_on = null
+      do update set added_on = excluded.added_on, expires_on = null, place = excluded.place
   ),
   listed as (
     delete from heladera.shopping_items s
@@ -159,8 +177,8 @@ returns void language sql security invoker set search_path = '' as $$
   insert into heladera.purchases (household_id, product_id, bought_on)
   select heladera.my_household_id(), product_id, today from ids
 $$;
-revoke execute on function heladera.add_to_fridge(bigint[], date) from public, anon;
-grant execute on function heladera.add_to_fridge(bigint[], date) to authenticated;
+revoke execute on function heladera.add_to_fridge(bigint[], date, jsonb) from public, anon;
+grant execute on function heladera.add_to_fridge(bigint[], date, jsonb) to authenticated;
 
 -- ───────────────────────── Cooked, skipped and basics (¿Qué comemos hoy?)
 -- What the household cooked, kept as history. Delete is for Undo.

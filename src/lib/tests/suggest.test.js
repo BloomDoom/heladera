@@ -121,3 +121,32 @@ test('favorites and own recipes go up', () => {
   assert.deepEqual(both[0].reasons, ['Es una receta de ustedes', 'No lo cocinan hace meses'])
   assert.equal(both[0].score, 4)
 })
+
+test('freezer reason on the card', () => {
+  const mk = (place) => [
+    { ...item(1, 'Pollo', 12, '2026-10-20'), place },
+    { ...item(2, 'Tomate', 12, '2026-10-20'), place: 'fridge' },
+  ]
+  const [frozen] = rank({ candidates: [cand(1, [1, 2])], items: mk('freezer') })
+  const [fresh] = rank({ candidates: [cand(1, [1, 2])], items: mk('fridge') })
+  assert.equal(frozen.reasons.at(-1), 'Pollo está en el freezer')
+  assert.equal(frozen.score, fresh.score)
+  assert.ok(!fresh.reasons.some((r) => r.includes('freezer')))
+})
+
+test('freezer line goes after the fallback reason', () => {
+  const items = [{ ...item(1, 'Pollo', 12, '2026-10-20'), place: 'freezer' }]
+  const cooked = [{ id: 1, recipe_id: 1, cooked_on: '2026-10-20' }]
+  const [s] = rank({ candidates: [cand(1, [1])], items, cooked })
+  assert.deepEqual(s.reasons, ['Se puede hacer con lo que hay', 'Pollo está en el freezer'])
+})
+
+test('two frozen items give one line in used-id order', () => {
+  const items = [
+    { ...item(1, 'Pollo', 12, '2026-10-20'), place: 'freezer' },
+    { ...item(2, 'Carne picada', 12, '2026-10-20'), place: 'freezer' },
+  ]
+  const [s] = rank({ candidates: [cand(1, [2, 1])], items })
+  const lines = s.reasons.filter((r) => r.includes('freezer'))
+  assert.deepEqual(lines, ['Carne picada y pollo están en el freezer'])
+})

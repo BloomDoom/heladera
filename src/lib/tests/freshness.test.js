@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { freshness, freshnessText, compareItems } from '../freshness.js'
+import { freshness, freshnessText, compareItems, comparePantry, freezerText, FREEZER_DAYS } from '../freshness.js'
 
 const item = (name, shelf_days, added_on, expires_on = null) => ({
   product_id: name,
@@ -66,4 +66,48 @@ test('compareItems breaks ties by name', () => {
   const sorted = [item('zanahoria', null, '2026-10-20'), item('ají', null, '2026-10-20')]
     .sort((x, y) => compareItems(x, y, today))
   assert.deepEqual(sorted.map((i) => i.product.name), ['ají', 'zanahoria'])
+})
+
+const placed = (name, shelf_days, added_on, place) => ({ ...item(name, shelf_days, added_on), place })
+
+test('freezer items last 90 days', () => {
+  assert.equal(FREEZER_DAYS, 90)
+  const f = freshness(placed('pollo', 3, '2026-10-01', 'freezer'), '2026-10-23')
+  assert.equal(f.expiresOn, '2026-12-30')
+})
+
+test('freezer text', () => {
+  const f = freshness(placed('pollo', 3, '2026-10-01', 'freezer'), '2026-10-23')
+  assert.equal(freshnessText(f, 'freezer').since, 'Hasta el 30/12')
+  assert.equal(freshnessText({ daysIn: 1, daysLeft: null, status: 'ok', expiresOn: null }, 'freezer').since, null)
+})
+
+test('pantry rows only warn', () => {
+  const today = '2026-10-23'
+  const pan = freshnessText(freshness(placed('pan', 4, '2026-10-20', 'pantry'), today), 'pantry')
+  assert.deepEqual(pan, { since: null, warning: 'Vence mañana' })
+  const arroz = freshnessText(freshness(placed('arroz', 180, '2026-10-20', 'pantry'), today), 'pantry')
+  assert.deepEqual(arroz, { since: null, warning: null })
+})
+
+test('comparePantry puts soon first, then by name', () => {
+  const today = '2026-10-23'
+  const list = [
+    placed('arroz', 180, '2026-10-20', 'pantry'),
+    placed('pan', 4, '2026-10-20', 'pantry'),
+    placed('aceite', 365, '2026-10-20', 'pantry'),
+  ].sort((x, y) => comparePantry(x, y, today))
+  assert.deepEqual(list.map((i) => i.product.name), ['pan', 'aceite', 'arroz'])
+})
+
+test('freezerText joins names', () => {
+  assert.equal(freezerText([]), null)
+  assert.equal(freezerText(['Pollo']), 'Pollo está en el freezer')
+  assert.equal(freezerText(['Pollo', 'Carne picada']), 'Pollo y carne picada están en el freezer')
+  assert.equal(freezerText(['Pollo', 'Carne picada', 'Merluza']), 'Pollo, carne picada y merluza están en el freezer')
+})
+
+test('freezer item keeps its hand-set date', () => {
+  const f = freshness({ ...item('pollo', 3, '2026-10-01', '2026-11-15'), place: 'freezer' }, '2026-10-23')
+  assert.equal(f.expiresOn, '2026-11-15')
 })

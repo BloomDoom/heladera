@@ -94,6 +94,7 @@ export default function NewProductForm({ products, initialName, onCreate, onPick
         Se guarda en
         <select value={storage} onChange={(e) => setStorage(e.target.value)}>
           <option value="fridge">Heladera</option>
+          <option value="freezer">Freezer</option>
           <option value="pantry">Alacena</option>
         </select>
       </label>

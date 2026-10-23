@@ -301,7 +301,34 @@ input:focus-visible {
   cursor: pointer;
 }
 
-/* ───────── Heladera */
+/* ───────── Cocina */
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.segmented button {
+  min-height: var(--tap);
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+.segmented button[aria-pressed='true'] {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+.fridge-actions .btn-secondary {
+  margin-top: 0.5rem;
+}
+
 .fridge-empty,
 .fridge-list {
   margin-top: 1rem;
@@ -503,6 +530,43 @@ select {
 }
 .tile[aria-pressed='true'] .tile-present {
   color: var(--primary-text);
+}
+
+.add-screen--has-places {
+  padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + 6rem + 35dvh);
+}
+.add-places {
+  max-height: 35dvh;
+  overflow-y: auto;
+  max-width: 38rem;
+  margin: 0 auto 0.5rem;
+}
+.add-places h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+.add-places ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.add-places li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+}
+.place-btn {
+  min-height: 48px;
+  min-width: 6.5rem;
+  padding: 0 1rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 /* Sticky bar just above the tab bar. */

@@ -64,7 +64,9 @@ The order matters (see the header of `supabase/schema.sql`):
    still works for its users.
 2. Supabase → SQL Editor: run `supabase/schema.sql`. On a database made with an
    older `schema.sql`, run the dated files of `supabase/migrations/` instead, in
-   order: `2026-10-22-recetario.sql`, then `2026-10-23-inventario.sql`, then `2026-10-24-hoy.sql`, then `2026-10-25-propias.sql`, then `2026-10-26-compras.sql`.
+   order: `2026-10-22-recetario.sql`, then `2026-10-23-inventario.sql`, then `2026-10-24-hoy.sql`, then `2026-10-25-propias.sql`, then `2026-10-26-compras.sql`, then `2026-10-27-cocina.sql`.
+   The kitchen has three places, Heladera, Freezer and Alacena
+   (`fridge_items.place`); `products.storage` is the usual place.
 3. Project Settings → Data API → Exposed schemas: add `heladera`.
 4. Authentication → Add user (Auto Confirm User) for each person, unless they
    use an existing login. A Heladera login must not be in zona-fit's `gym_users`.
@@ -87,7 +89,8 @@ generated recipes are **not** in the repo (personal use only).
    or non-food lines (`ignore.json`), run `npm test` and build again.
 3. `node --env-file=.env.local scripts/recipes/load.js`: loads it into Supabase
    (needs `SUPABASE_SERVICE_KEY` in `.env.local`, see `.env.example`). Safe to
-   run again.
+   run again. Run after `2026-10-27-cocina.sql`: products may be stored in
+   `freezer`. Rebuild `scripts/recipes/out/` with `build.js` before loading.
 
 ## Tests
 

@@ -2,7 +2,7 @@
 // The score is a plain sum, so every point can be explained on the card.
 
 import { daysBetween, plural } from './format.js'
-import { freshness } from './freshness.js'
+import { freshness, freezerText } from './freshness.js'
 
 const SOON_DAYS = 2
 
@@ -88,12 +88,20 @@ export function rankSuggestions({ candidates, items, cooked, rejections, today }
 
     if (c.missing_product_id !== null) score -= 1
 
+    const frozen = c.used_product_ids
+      .map((id) => items.find((i) => i.product_id === id))
+      .filter((i) => i && i.place === 'freezer')
+      .map((i) => i.product.name)
+    if (reasons.length === 0) reasons.push('Se puede hacer con lo que hay')
+    const frozenReason = freezerText(frozen)
+    if (frozenReason) reasons.push(frozenReason)
+
     return {
       recipeId: c.recipe_id,
       title: c.title,
       minutes: c.minutes,
       score,
-      reasons: reasons.length ? reasons : ['Se puede hacer con lo que hay'],
+      reasons,
       missing: c.missing_product_id !== null ? `Falta ${(c.missing_product_name ?? '').toLowerCase() || 'algo'}` : null,
     }
   })
