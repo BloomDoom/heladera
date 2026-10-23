@@ -92,6 +92,7 @@ export function rankSuggestions({ candidates, items, cooked, rejections, today }
       .map((id) => items.find((i) => i.product_id === id))
       .filter((i) => i && i.place === 'freezer')
       .map((i) => i.product.name)
+    if (reasons.length === 0) reasons.push('Se puede hacer con lo que hay')
     const frozenReason = freezerText(frozen)
     if (frozenReason) reasons.push(frozenReason)
 
@@ -100,7 +101,7 @@ export function rankSuggestions({ candidates, items, cooked, rejections, today }
       title: c.title,
       minutes: c.minutes,
       score,
-      reasons: reasons.length ? reasons : ['Se puede hacer con lo que hay'],
+      reasons,
       missing: c.missing_product_id !== null ? `Falta ${(c.missing_product_name ?? '').toLowerCase() || 'algo'}` : null,
     }
   })

@@ -106,3 +106,8 @@ test('freezerText joins names', () => {
   assert.equal(freezerText(['Pollo', 'Carne picada']), 'Pollo y carne picada están en el freezer')
   assert.equal(freezerText(['Pollo', 'Carne picada', 'Merluza']), 'Pollo, carne picada y merluza están en el freezer')
 })
+
+test('freezer item keeps its hand-set date', () => {
+  const f = freshness({ ...item('pollo', 3, '2026-10-01', '2026-11-15'), place: 'freezer' }, '2026-10-23')
+  assert.equal(f.expiresOn, '2026-11-15')
+})
