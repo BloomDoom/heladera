@@ -1,24 +1,80 @@
 /* ───────── Colors and sizes used everywhere. Change them here.
-   Base copied from zona-fit, with the green of the Heladera icon instead
-   of purple. The app is always dark. Text colors keep 4.5:1 contrast or
-   more on their backgrounds. */
-:root {
-  --bg: #0d0d10;           /* near-black page background */
-  --surface: #19191e;      /* cards */
-  --text: #f2f2f4;         /* near-white */
-  --muted: #a3a3ad;        /* secondary text (7:1 on the cards) */
-  --border: #34343d;
-  --primary: #17775f;      /* green: buttons (5.4:1 with white) */
-  --primary-ink: #7fdcc0;  /* green for text: links, active tab (10:1 on the cards) */
+   Two themes, picked in Más (src/lib/theme.js puts data-theme on <html>):
+   - light, "Puerta blanca": the white fridge door with magnets and notes.
+   - dark, "Pantalla": a dark-grey steel fridge with a display.
+   Text colors keep 4.5:1 contrast or more on their backgrounds; the test
+   src/lib/tests/contrast.test.js checks it. */
+:root,
+[data-theme='light'] {
+  --bg: #fbfbfa;           /* the white door */
+  --surface: #ffffff;      /* paper: cards, rows, fields */
+  --border: #d7dadd;
+  --text: #26292c;         /* marker black */
+  --muted: #5c6268;        /* secondary text */
+  --primary: #c03a2b;      /* tomato: main buttons */
   --primary-text: #ffffff;
-  --danger: #ff9b9b;       /* errors (text and outlines) */
-  --warn: #f5b942;         /* amber: "vence pronto" (9.9:1 on the cards) */
+  --primary-ink: #962b1f;  /* tomato for text: links, active things, focus */
+  --danger: #962b1f;       /* errors, "Venció" */
+  --warn: #8a5a00;         /* "Vence pronto" text */
+  --freezer: #3d5f8a;      /* blue magnet: things in the freezer */
+  --ok: #3e7b3a;           /* leaf green: all fine */
+  --note: #fff4b8;         /* yellow sticky note */
+  --note-ink: #3a3420;
+  --handle: #b9bec4;       /* the door handle on the right edge */
+  --handle-shade: #9aa0a6;
+  --handle-light: #e4e6e8;
+  --tab-bg: #eef0f1;
+  --tab-active-bg: #26292c;
+  --tab-active-text: #ffffff;
+  --toast-bg: #26292c;
+  --toast-text: #ffffff;
+  --offline-bg: #b42318;   /* a deep red band */
+  --magnet: #c03a2b;       /* tomato magnet */
+  --magnet-shine: #e06a5c;
 
-  color-scheme: dark;
+  --font-ui: 'Rethink Sans Variable', -apple-system, system-ui, 'Segoe UI', sans-serif;
+  --font-note: 'Caveat Variable', 'Bradley Hand', cursive; /* handwriting */
+  --font-readout: var(--font-ui);
+
+  color-scheme: light;
 
   --tap: 48px;            /* minimum height of anything you can tap */
   --tab-bar-height: 64px;
-  --radius: 16px;         /* buttons and fields */
+  --radius: 14px;         /* buttons and fields */
+  --handle-room: 28px;    /* space kept free for the handle on the right */
+}
+
+[data-theme='dark'] {
+  --bg: #2b2e33;           /* dark-grey steel */
+  --surface: #1f2226;      /* dark glass panels */
+  --border: #3a3e44;
+  --text: #eef1f4;
+  --muted: #a9b1ba;
+  --primary: #c93b2e;      /* tomato button */
+  --primary-text: #ffffff;
+  --primary-ink: #ff8a7a;  /* tomato light, for text on the dark */
+  --danger: #ff8a7a;
+  --warn: #f5c96a;         /* amber readout */
+  --freezer: #8ccdff;      /* ice blue */
+  --ok: #8fd18a;
+  --note: #111316;         /* the display panel */
+  --note-ink: #eef1f4;
+  --handle: #1b1d20;       /* a flat handle sunk into the door */
+  --handle-shade: #3d4148;
+  --handle-light: #3d4148;
+  --tab-bg: #1b1d20;
+  --tab-active-bg: #eef1f4;
+  --tab-active-text: #1b1d20;
+  --toast-bg: #eef1f4;
+  --toast-text: #1b1d20;
+  --offline-bg: #b42318;
+  --magnet: #ff6b57;       /* a lit red dot instead of a magnet */
+  --magnet-shine: #ff6b57;
+
+  --font-note: var(--font-ui);
+  --font-readout: 'Chakra Petch', var(--font-ui); /* the display's digits */
+
+  color-scheme: dark;
 }
 
 /* ───────── Text size + iOS Dynamic Type
@@ -43,8 +99,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  /* Nunito is bundled with the app (see main.jsx), so it works offline. */
-  font-family: 'Nunito Variable', -apple-system, system-ui, 'Segoe UI', sans-serif;
+  /* The fonts are bundled with the app (see main.jsx), so they work offline. */
+  font-family: var(--font-ui);
   font-size: 1.0625rem; /* 18px at the default iPhone text size */
   line-height: 1.45;
   -webkit-text-size-adjust: 100%;
@@ -55,8 +111,43 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
+/* The dark fridge is brushed steel: fine vertical lines. */
+[data-theme='dark'] body {
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 27px,
+    #30343a 27px 28px,
+    transparent 28px 61px,
+    #272a2e 61px 62px
+  );
+}
+
+/* The door handle, drawn on the right edge of every screen. On the white
+   door it is a grey bar; on the dark fridge, a flat one sunk into the steel. */
+body::after {
+  content: '';
+  position: fixed;
+  z-index: 5;
+  right: calc(env(safe-area-inset-right) + 8px);
+  top: 22dvh;
+  height: 44dvh;
+  width: 14px;
+  border-radius: 8px;
+  background: var(--handle);
+  box-shadow: inset -3px 0 0 var(--handle-shade), -2px 0 0 var(--handle-light);
+  pointer-events: none;
+}
+[data-theme='dark'] body::after {
+  width: 10px;
+  border-radius: 6px;
+  box-shadow: inset 1px 0 0 var(--handle-shade);
+}
+
 h1 {
   font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
   margin: 0.5rem 0 1rem;
 }
 
@@ -65,6 +156,8 @@ h1 {
   max-width: 40rem;
   margin: 0 auto;
   padding: 1rem;
+  /* Keeps everything clear of the door handle on the right. */
+  padding-right: calc(1rem + var(--handle-room));
   /* Room so the last thing on the screen isn't hidden by the tab bar. */
   padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + 2rem);
 }
@@ -126,7 +219,7 @@ input {
 .btn-secondary {
   background: var(--surface);
   color: var(--primary-ink);
-  border: 2px solid var(--primary-ink);
+  border: 2px solid currentColor;
 }
 
 label {
@@ -141,7 +234,7 @@ input {
   min-height: var(--tap);
   margin-top: 0.35rem;
   padding: 0.6rem 0.75rem;
-  border: 2px solid var(--border);
+  border: 2px solid var(--handle-shade);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
@@ -180,8 +273,8 @@ input:focus {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: #b42318; /* a deep red: --danger is light, made for text */
-  color: #fff;
+  background: var(--offline-bg);
+  color: var(--primary-text);
   padding: 0.75rem 1rem;
   text-align: center;
   font-weight: 600;
@@ -195,7 +288,7 @@ input:focus {
   bottom: 0;
   z-index: 10;
   display: flex;
-  background: var(--surface);
+  background: var(--tab-bg);
   border-top: 1px solid var(--border);
   /* Stay above the iPhone's home indicator bar. */
   padding-bottom: env(safe-area-inset-bottom);
@@ -230,9 +323,17 @@ input:focus {
   stroke-linejoin: round;
 }
 
-/* NavLink adds the "active" class to the current tab. */
+/* NavLink adds the "active" class to the current tab: it gets a pill
+   behind its icon, like a magnet on the door. */
 .tab.active {
-  color: var(--primary-ink);
+  color: var(--text);
+}
+.tab.active svg {
+  width: 52px;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
 }
 
 /* ───────── Loading errors */
@@ -259,9 +360,14 @@ input:focus-visible {
 }
 
 @media (prefers-contrast: more) {
-  :root {
-    --muted: #d4d4da;
-    --border: #6b6b76;
+  :root,
+  [data-theme='light'] {
+    --muted: #3f444a;
+    --border: #9aa0a6;
+  }
+  [data-theme='dark'] {
+    --muted: #d4d9de;
+    --border: #6b7078;
   }
 }
 
@@ -285,18 +391,18 @@ input:focus-visible {
   gap: 1rem;
   padding: 0.5rem 0.5rem 0.5rem 1rem;
   min-height: 56px;
-  background: #2e2e36; /* a lighter grey, so it stands out from the black page */
-  color: #fff;
+  background: var(--toast-bg);
+  color: var(--toast-text);
   border-radius: var(--radius);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
 }
 .toast button {
   min-height: var(--tap);
   padding: 0 1rem;
   background: none;
-  border: 2px solid #fff;
+  border: 2px solid currentColor;
   border-radius: 8px;
-  color: #fff;
+  color: var(--toast-text);
   font-weight: 700;
   cursor: pointer;
 }
@@ -383,7 +489,7 @@ input:focus-visible {
   color: var(--danger);
 }
 .chip-ok {
-  color: var(--primary-ink);
+  color: var(--ok);
 }
 
 /* "Buscar receta": results reuse the history rows, with the title on top
