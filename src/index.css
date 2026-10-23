@@ -591,7 +591,8 @@ input:focus-visible {
 .search-results {
   margin-top: 1rem;
 }
-.search-results a {
+.search-results a,
+.search-results button {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.25rem;
@@ -1225,6 +1226,7 @@ select {
   margin-bottom: 0.5rem;
 }
 .basics-results button,
+.search-results button,
 .history-list a {
   display: flex;
   align-items: center;
@@ -1418,6 +1420,9 @@ textarea:focus {
 
 .recipe-list-btn {
   margin-top: 1rem;
+}
+.week-search {
+  margin: 0 0 1rem;
 }
 .week-counter {
   text-align: center;
