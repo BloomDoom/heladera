@@ -76,3 +76,18 @@ export function freezerText(names) {
   const list = words.length === 1 ? words[0] : `${words.slice(0, -1).join(', ')} y ${words.at(-1)}`
   return `${list} ${names.length === 1 ? 'está' : 'están'} en el freezer`
 }
+
+// For the "Vence pronto" note on Hoy: what is about to go off (or already
+// did), in any place, most urgent first. `when` is short, for a note:
+// "mañana", "hoy", "en 2 días", "venció ayer".
+export function soonItems(items, today, max = 3) {
+  return items
+    .map((item) => ({ item, f: freshness(item, today) }))
+    .filter(({ f }) => f.status !== 'ok')
+    .sort((a, b) => a.f.daysLeft - b.f.daysLeft)
+    .slice(0, max)
+    .map(({ item, f }) => {
+      const warning = warningText(f.daysLeft).replace(/^Vence /, '')
+      return { name: item.product.name, when: warning[0].toLowerCase() + warning.slice(1), status: f.status }
+    })
+}

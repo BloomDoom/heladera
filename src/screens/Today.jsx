@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useLoad } from '../lib/useLoad.js'
 import { loadSuggestionsData, rejectRecipe } from '../lib/today.js'
 import { rankSuggestions } from '../lib/suggest.js'
+import { soonItems } from '../lib/freshness.js'
 import { todayISO } from '../lib/format.js'
 import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
@@ -48,6 +49,7 @@ export default function Today({ household }) {
   }, [])
 
   const suggestions = useMemo(() => (load.data ? rankSuggestions(load.data) : []), [load.data])
+  const soon = useMemo(() => (load.data ? soonItems(load.data.items, todayISO()) : []), [load.data])
   const current = suggestions.find((s) => !skipped.includes(s.recipeId))
 
   async function skip(recipeId) {
@@ -65,6 +67,19 @@ export default function Today({ household }) {
       <h1>¿Qué comemos hoy?</h1>
       <Link to="/search" className="link-button today-search">Buscar receta</Link>
       <LoadState {...load} />
+      {soon.length > 0 && (
+        // Read-only: on the white door a sticky note, on the dark fridge its display.
+        <aside className="soon-note" aria-label="Vence pronto">
+          <h2>Vence pronto</h2>
+          <ul>
+            {soon.map((s) => (
+              <li key={s.name} data-status={s.status}>
+                <span>{s.name}</span> <span className="soon-when">{s.when}</span>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )}
       {load.data && current && (
         <SuggestionCard
           key={current.recipeId}
