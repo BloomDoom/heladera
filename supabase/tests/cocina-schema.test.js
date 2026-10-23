@@ -85,6 +85,20 @@ test('store_checked uses the usual place', async () => {
   assert.equal((await placesOf(db)).pollo.place, 'freezer')
 })
 
+test('an insert without place takes the usual place', async () => {
+  const { db, a1, ids } = await setup()
+  await as(db, a1, "insert into heladera.fridge_items (household_id, product_id, added_on) values (1, $1, '2026-10-27')", [ids.pollo])
+  assert.equal((await placesOf(db)).pollo.place, 'freezer')
+  await as(db, a1, "update heladera.fridge_items set place = 'fridge' where product_id = $1", [ids.pollo])
+  await as(
+    db,
+    a1,
+    "insert into heladera.fridge_items (household_id, product_id, added_on) values (1, $1, '2026-10-28') on conflict (household_id, product_id) do update set added_on = excluded.added_on",
+    [ids.pollo],
+  )
+  assert.equal((await placesOf(db)).pollo.place, 'fridge')
+})
+
 test('backfill puts items in their usual place', async () => {
   const db = await newDb(ZONA_FIT + '/schema.sql', STAGE3)
   await db.exec(`
@@ -142,6 +156,10 @@ test('migration matches schema.sql', async () => {
       where schemaname = 'heladera' order by 1, 2`)).rows,
     published: (await db.query(`select schemaname, tablename from pg_publication_tables
       where pubname = 'supabase_realtime' order by 1, 2`)).rows,
+    checks: (await db.query(`select conrelid::regclass::text as tbl, conname, pg_get_constraintdef(oid) as def from pg_constraint
+      where connamespace = 'heladera'::regnamespace and contype = 'c' order by 1, 2`)).rows,
+    triggers: (await db.query(`select c.relname, t.tgname from pg_trigger t join pg_class c on c.oid = t.tgrelid
+      where c.relnamespace = 'heladera'::regnamespace and not t.tgisinternal order by 1, 2`)).rows,
     signatures: (await db.query(`select proname, pg_get_function_identity_arguments(oid) as args from pg_proc
       where pronamespace = 'heladera'::regnamespace order by 1, 2`)).rows,
   })

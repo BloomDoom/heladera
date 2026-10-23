@@ -110,6 +110,18 @@ create table heladera.fridge_items (
   primary key (household_id, product_id)
 );
 
+-- An insert without a place takes the product's usual place.
+create function heladera.fill_place() returns trigger language plpgsql security invoker set search_path = '' as $$
+begin
+  if new.place is null then
+    select p.storage into new.place from heladera.products p where p.id = new.product_id;
+  end if;
+  return new;
+end $$;
+revoke execute on function heladera.fill_place() from public, anon;
+create trigger fridge_items_fill_place before insert on heladera.fridge_items
+  for each row execute function heladera.fill_place();
+
 -- One row per product bought, kept after it leaves the fridge.
 create table heladera.purchases (
   id           bigint generated always as identity primary key,
@@ -148,6 +160,7 @@ create table heladera.shopping_snoozes (
 -- and takes it off the shopping list.
 create function heladera.add_to_fridge(product_ids bigint[], today date, places jsonb default '{}')
 returns void language sql security invoker set search_path = '' as $$
+  -- Unknown or invisible ids are still rejected by the purchases insert (FK/RLS).
   with ids as (select distinct unnest(product_ids) as product_id),
   added as (
     insert into heladera.fridge_items (household_id, product_id, added_on, place)
