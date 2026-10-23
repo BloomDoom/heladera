@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLoad } from '../lib/useLoad.js'
-import { loadFridge, finishItem, restoreItem, setExpiry } from '../lib/fridge.js'
+import { loadFridge, finishItem, restoreItem, setExpiry, moveItem } from '../lib/fridge.js'
 import { removeFromList } from '../lib/shopping.js'
-import { compareItems } from '../lib/freshness.js'
+import { PLACES } from '../lib/products.js'
+import { compareItems, comparePantry } from '../lib/freshness.js'
 import { todayISO } from '../lib/format.js'
 import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
 import LoadState from '../components/LoadState.jsx'
-import FridgeItem from '../components/FridgeItem.jsx'
+import FridgeItem, { MOVE_LABELS } from '../components/FridgeItem.jsx'
+
+let selectedPlace = 'fridge' // survives navigation while the app is open
 
 // What's in the fridge (and the pantry), most urgent first.
 export default function Fridge({ household }) {
@@ -17,6 +20,7 @@ export default function Fridge({ household }) {
   const load = useLoad(loadFridge, [])
   const [items, setItems] = useState([])
   const [openId, setOpenId] = useState(null) // only one row open at a time
+  const [place, setPlace] = useState(selectedPlace)
   const today = todayISO()
 
   // Work on a copy, so a row can disappear at once and come back if saving fails.
@@ -24,7 +28,16 @@ export default function Fridge({ household }) {
     if (load.data) setItems(load.data)
   }, [load.data])
 
-  const sorted = [...items].sort((a, b) => compareItems(a, b, today))
+  function choose(key) {
+    selectedPlace = key
+    setPlace(key)
+    setOpenId(null)
+  }
+
+  const counts = Object.fromEntries(PLACES.map((p) => [p.key, items.filter((i) => i.place === p.key).length]))
+  const compare = place === 'pantry' ? comparePantry : compareItems
+  const sorted = items.filter((i) => i.place === place).sort((a, b) => compare(a, b, today))
+  const label = PLACES.find((p) => p.key === place).label.toLowerCase()
 
   function put(item) {
     setItems((list) => [...list.filter((i) => i.product_id !== item.product_id), item])
@@ -54,6 +67,27 @@ export default function Fridge({ household }) {
     })
   }
 
+  async function move(item, to) {
+    setItems((list) => list.filter((i) => i.product_id !== item.product_id))
+    setOpenId(null)
+    try {
+      await moveItem(item.product_id, to, today)
+    } catch (error) {
+      put(item)
+      showToast(saveErrorMessage(error))
+      return
+    }
+    showToast(`${item.product.name}: ${MOVE_LABELS[to].toast}`, async () => {
+      put(item)
+      try {
+        await restoreItem(household.id, item)
+      } catch (error) {
+        setItems((list) => list.filter((i) => i.product_id !== item.product_id))
+        showToast(saveErrorMessage(error))
+      }
+    })
+  }
+
   async function changeExpiry(item, iso) {
     put({ ...item, expires_on: iso })
     try {
@@ -66,14 +100,21 @@ export default function Fridge({ household }) {
 
   return (
     <main className="screen fridge-screen">
-      <h1>Heladera</h1>
+      <h1>Cocina</h1>
       <LoadState {...load} />
       {load.data && (
         <>
+          <div className="segmented">
+            {PLACES.map((p) => (
+              <button key={p.key} aria-pressed={place === p.key} onClick={() => choose(p.key)}>
+                {`${p.label} ${counts[p.key]}`}
+              </button>
+            ))}
+          </div>
           <button className="btn-primary" onClick={() => navigate('/fridge/add')}>Agregar</button>
           {sorted.length === 0 ? (
             <p className="empty fridge-empty">
-              La heladera está vacía. Tocá Agregar para cargar lo que compraste.
+              {`No hay nada en ${label === 'freezer' ? 'el freezer' : `la ${label}`}.`}
             </p>
           ) : (
             <ul className="fridge-list">
@@ -86,6 +127,7 @@ export default function Fridge({ household }) {
                   onToggle={() => setOpenId(openId === item.product_id ? null : item.product_id)}
                   onFinish={() => finish(item)}
                   onExpiry={(iso) => changeExpiry(item, iso)}
+                  onMove={(to) => move(item, to)}
                 />
               ))}
             </ul>

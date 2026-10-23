@@ -9,7 +9,7 @@ export async function loadFridge() {
     supabase
       .from('fridge_items')
       .select(
-        'product_id, added_on, expires_on, product:products(id, code, household_id, name, category, storage, shelf_days, synonyms)',
+        'product_id, place, added_on, expires_on, product:products(id, code, household_id, name, category, storage, shelf_days, synonyms)',
       ),
   )
 }
@@ -26,9 +26,18 @@ export async function restoreItem(householdId, item) {
     supabase.from('fridge_items').upsert({
       household_id: householdId,
       product_id: item.product_id,
+      place: item.place,
       added_on: item.added_on,
       expires_on: item.expires_on,
     }),
+  )
+}
+
+// Moves an item to another place. The clock starts again there and a
+// hand-set expiry no longer applies.
+export async function moveItem(productId, place, today) {
+  return unwrap(
+    supabase.from('fridge_items').update({ place, added_on: today, expires_on: null }).eq('product_id', productId),
   )
 }
 

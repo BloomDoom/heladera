@@ -301,7 +301,34 @@ input:focus-visible {
   cursor: pointer;
 }
 
-/* ───────── Heladera */
+/* ───────── Cocina */
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.segmented button {
+  min-height: var(--tap);
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+.segmented button[aria-pressed='true'] {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+.fridge-actions .btn-secondary {
+  margin-top: 0.5rem;
+}
+
 .fridge-empty,
 .fridge-list {
   margin-top: 1rem;

@@ -15,7 +15,7 @@ const icons = {
 
 export const tabs = [
   { to: '/', label: 'Hoy', icon: 'today' },
-  { to: '/fridge', label: 'Heladera', icon: 'fridge' },
+  { to: '/fridge', label: 'Cocina', icon: 'fridge' },
   { to: '/shopping', label: 'Compras', icon: 'shopping' },
   { to: '/more', label: 'Más', icon: 'more' },
 ]
