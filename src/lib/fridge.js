@@ -65,8 +65,9 @@ export async function loadAddData(today) {
 }
 
 // Puts the products in the fridge (or renews them) and records the purchase.
-export async function addToFridge(productIds, today) {
-  return unwrap(supabase.rpc('add_to_fridge', { product_ids: productIds, today }))
+// `places` maps a product id to a place, only where it differs from the usual one.
+export async function addToFridge(productIds, today, places = {}) {
+  return unwrap(supabase.rpc('add_to_fridge', { product_ids: productIds, today, places }))
 }
 
 // A new product of this household. Returns the saved row.

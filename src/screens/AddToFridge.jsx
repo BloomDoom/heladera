@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLoad } from '../lib/useLoad.js'
 import { loadAddData, addToFridge, createProduct } from '../lib/fridge.js'
-import { searchProducts, frequentProducts, groupByShop } from '../lib/products.js'
+import { searchProducts, frequentProducts, groupByShop, PLACES } from '../lib/products.js'
 import { todayISO, plural } from '../lib/format.js'
 import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
@@ -17,6 +17,7 @@ export default function AddToFridge({ household }) {
   const load = useLoad(() => loadAddData(todayISO()), [])
   const [products, setProducts] = useState([])
   const [selected, setSelected] = useState(() => new Set())
+  const [chosen, setChosen] = useState({}) // id -> place, only what the person changed
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -34,6 +35,21 @@ export default function AddToFridge({ household }) {
       else next.add(id)
       return next
     })
+    setChosen((c) => {
+      if (!(id in c)) return c
+      const { [id]: _forgotten, ...rest } = c
+      return rest
+    })
+  }
+
+  function placeOf(product) {
+    return chosen[product.id] ?? product.storage ?? 'fridge'
+  }
+
+  function nextPlace(product) {
+    const keys = PLACES.map((p) => p.key)
+    const next = keys[(keys.indexOf(placeOf(product)) + 1) % keys.length]
+    setChosen((c) => ({ ...c, [product.id]: next }))
   }
 
   function select(id) {
@@ -60,7 +76,11 @@ export default function AddToFridge({ household }) {
     sending.current = true
     setSaving(true)
     try {
-      await addToFridge([...selected], todayISO())
+      const places = {}
+      for (const p of products) {
+        if (selected.has(p.id) && placeOf(p) !== (p.storage ?? 'fridge')) places[p.id] = placeOf(p)
+      }
+      await addToFridge([...selected], todayISO(), places)
     } catch (error) {
       showToast(saveErrorMessage(error))
       sending.current = false
@@ -130,6 +150,30 @@ export default function AddToFridge({ household }) {
                 </section>
               ))}
             </>
+          )}
+          {selected.size > 0 && (
+            <section className="add-places">
+              <h2>Van a:</h2>
+              <ul>
+                {products
+                  .filter((p) => selected.has(p.id))
+                  .map((p) => {
+                    const label = PLACES.find((pl) => pl.key === placeOf(p))?.label
+                    return (
+                      <li key={p.id}>
+                        <span>{p.name}</span>
+                        <button
+                          className="place-btn"
+                          aria-label={`${p.name}: ${label}. Cambiar lugar`}
+                          onClick={() => nextPlace(p)}
+                        >
+                          {label}
+                        </button>
+                      </li>
+                    )
+                  })}
+              </ul>
+            </section>
           )}
           <div className="add-bar">
             <button className="btn-primary" disabled={selected.size === 0 || saving} onClick={submit}>
