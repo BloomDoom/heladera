@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { readTheme, saveTheme, applyTheme } from '../lib/theme.js'
+import { currentTheme, saveTheme, applyTheme } from '../lib/theme.js'
 
 const OPTIONS = [
   { key: 'light', label: 'Puerta blanca' },
@@ -18,7 +18,7 @@ function storage() {
 // "Puerta blanca" or "Pantalla": changes the whole app at once and is
 // remembered on this phone.
 export default function ThemeSwitch() {
-  const [theme, setTheme] = useState(() => readTheme(storage()))
+  const [theme, setTheme] = useState(() => currentTheme())
 
   function choose(next) {
     setTheme(next)

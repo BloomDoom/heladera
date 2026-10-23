@@ -32,3 +32,9 @@ export function applyTheme(theme, doc = document) {
   const meta = doc.querySelector('meta[name="theme-color"]')
   if (meta) meta.content = THEME_COLORS[theme]
 }
+
+// The theme on screen right now. Más starts from this, not from storage,
+// because saving can fail (private mode) while the theme still applies.
+export function currentTheme(doc = document) {
+  return doc.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
+}

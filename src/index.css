@@ -23,6 +23,7 @@
   --handle: #b9bec4;       /* the door handle on the right edge */
   --handle-shade: #9aa0a6;
   --handle-light: #e4e6e8;
+  --field-border: #868c93; /* edges of fields: 3:1 or more */
   --tab-bg: #eef0f1;
   --tab-active-bg: #26292c;
   --tab-active-text: #ffffff;
@@ -62,6 +63,7 @@
   --handle: #1b1d20;       /* a flat handle sunk into the door */
   --handle-shade: #3d4148;
   --handle-light: #3d4148;
+  --field-border: #737a83;
   --tab-bg: #1b1d20;
   --tab-active-bg: #eef1f4;
   --tab-active-text: #1b1d20;
@@ -103,6 +105,9 @@ body {
   font-family: var(--font-ui);
   font-size: 1.0625rem; /* 18px at the default iPhone text size */
   line-height: 1.45;
+  /* With the biggest iPhone text sizes a single word ("Verdulería") can be
+     wider than the screen: break it instead of running off the edge. */
+  overflow-wrap: anywhere;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
   /* Keep content out from under the Dynamic Island / status bar. */
@@ -155,9 +160,10 @@ h1 {
 .screen {
   max-width: 40rem;
   margin: 0 auto;
-  padding: 1rem;
+  /* Side padding stops growing at 20px, so very big text keeps the room. */
+  padding: 1rem min(1rem, 20px);
   /* Keeps everything clear of the door handle on the right. */
-  padding-right: calc(1rem + var(--handle-room));
+  padding-right: calc(min(1rem, 20px) + var(--handle-room));
   /* Room so the last thing on the screen isn't hidden by the tab bar. */
   padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + 2rem);
 }
@@ -234,7 +240,7 @@ input {
   min-height: var(--tap);
   margin-top: 0.35rem;
   padding: 0.6rem 0.75rem;
-  border: 2px solid var(--handle-shade);
+  border: 2px solid var(--field-border);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
@@ -270,6 +276,8 @@ input:focus {
 /* ───────── Logo: the fridge mark and the name */
 .logo {
   display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   align-items: center;
   gap: 0.5rem;
   color: var(--text);
@@ -657,7 +665,7 @@ select {
   min-height: var(--tap);
   margin-top: 0.35rem;
   padding: 0.6rem 0.75rem;
-  border: 2px solid var(--border);
+  border: 2px solid var(--field-border);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
@@ -948,6 +956,9 @@ select {
 }
 [data-theme='dark'] .soon-note li:last-child {
   border-bottom: none;
+}
+[data-theme='dark'] .soon-note li > span {
+  min-width: 0;
 }
 [data-theme='dark'] .soon-note li::before {
   content: '';
@@ -1249,7 +1260,7 @@ textarea {
   width: 100%;
   margin-top: 0.35rem;
   padding: 0.6rem 0.75rem;
-  border: 2px solid var(--border);
+  border: 2px solid var(--field-border);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
@@ -1347,10 +1358,11 @@ textarea:focus {
 .shop-add { margin-bottom: 1rem; }
 .shop-group { margin: 1.25rem 0 0.5rem; font-size: 0.95rem; font-weight: 600; color: var(--muted); }
 .shop-list { list-style: none; margin: 0; padding: 0; }
-.shop-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; padding: 0 0.75rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
-.shop-tick { display: flex; flex: 1; align-items: center; gap: 0.75rem; min-height: var(--tap); padding: 0.4rem 0; cursor: pointer; }
-.shop-tick input { flex: none; width: 1.5rem; height: 1.5rem; margin: 0; accent-color: var(--primary); }
+.shop-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; padding: 0 0.75rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.shop-tick { display: flex; flex: 1 1 60%; align-items: center; gap: min(0.75rem, 14px); min-height: var(--tap); padding: 0.4rem 0; cursor: pointer; }
+.shop-tick input { flex: none; width: min(1.5rem, 32px); height: min(1.5rem, 32px); margin: 0; accent-color: var(--primary); }
 .shop-name, .shop-reason { display: block; }
+.shop-tick > span { min-width: 0; }
 .shop-reason { font-size: 0.85rem; }
 .shop-row-done .shop-name { text-decoration: line-through; color: var(--muted); }
 
@@ -1358,7 +1370,7 @@ textarea:focus {
    tape, and a ticked thing gets crossed out with the red marker. */
 :root:not([data-theme='dark']) .shop-list {
   position: relative;
-  padding: 0.9rem 0.75rem 0.4rem;
+  padding: 0.9rem min(0.75rem, 14px) 0.4rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 4px;

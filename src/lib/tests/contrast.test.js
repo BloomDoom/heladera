@@ -55,3 +55,15 @@ for (const theme of ['light', 'dark']) {
     }
   })
 }
+
+// Edges of fields only need 3:1 (WCAG non-text contrast).
+for (const theme of ['light', 'dark']) {
+  test(`field borders are visible (3:1) in ${theme}`, () => {
+    const t = tokens(theme)
+    for (const bg of ['surface', 'bg']) {
+      assert.ok(t['field-border'], `${theme}: --field-border is missing`)
+      const r = ratio(t['field-border'], t[bg])
+      assert.ok(r >= 3, `${theme}: --field-border on --${bg} is ${r.toFixed(2)}:1`)
+    }
+  })
+}

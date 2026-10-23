@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readTheme, saveTheme, applyTheme } from '../theme.js'
+import { readTheme, saveTheme, applyTheme, currentTheme } from '../theme.js'
 
 function fakeStorage(values) {
   return {
@@ -66,4 +66,12 @@ test('applyTheme sets data-theme, color-scheme and the meta color', () => {
   applyTheme('light', doc)
   assert.equal(doc.documentElement.dataset.theme, 'light')
   assert.equal(doc.meta.content, '#fbfbfa')
+})
+
+test('currentTheme reads what is applied, even when it could not be saved', () => {
+  const doc = fakeDoc()
+  assert.equal(currentTheme(doc), 'light')
+  applyTheme('dark', doc)
+  saveTheme(throwing, 'dark')
+  assert.equal(currentTheme(doc), 'dark')
 })
