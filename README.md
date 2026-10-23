@@ -41,13 +41,17 @@ src/
     swipe.js                swipe gesture of the suggestion card
     recipes.js, ownRecipe.js  favorites and own recipes: save, delete, checks, step text
     today.js                loads and saves what Hoy, the recipe and the basics need
+    shopping.js, shoppingList.js  the shopping list: calls to Supabase (with Realtime, so the
+                            phones share the list live); habits, due products and layout (pure)
     useLoad.js, errors.js, useOnline.js, asset.js   copied from zona-fit
   components/               TabBar, LoadState, ErrorBoundary, Toast, BackButton,
                             FridgeItem, NewProductForm, SuggestionCard, FinishedSheet,
-                            AssumedEditor, IngredientPicker (a row of the recipe form)
+                            AssumedEditor, IngredientPicker (a row of the recipe form),
+                            ShoppingRow, ShoppingAdd
   screens/                  Login, Today (Hoy), Recipe (with favorite star and own-recipe actions),
                             RecipeForm (write or edit your own recipe), Fridge, AddToFridge,
-                            Shopping, More (Mis recetas, favorites), NoHousehold
+                            Shopping (Compras, live via Supabase Realtime), WeekDishes (dishes of the week),
+                            More (Mis recetas, favorites), NoHousehold
 public/                     icons
 .github/workflows/          deploy to GitHub Pages
 ```
@@ -60,7 +64,7 @@ The order matters (see the header of `supabase/schema.sql`):
    still works for its users.
 2. Supabase → SQL Editor: run `supabase/schema.sql`. On a database made with an
    older `schema.sql`, run the dated files of `supabase/migrations/` instead, in
-   order: `2026-10-22-recetario.sql`, then `2026-10-23-inventario.sql`, then `2026-10-24-hoy.sql`, then `2026-10-25-propias.sql`.
+   order: `2026-10-22-recetario.sql`, then `2026-10-23-inventario.sql`, then `2026-10-24-hoy.sql`, then `2026-10-25-propias.sql`, then `2026-10-26-compras.sql`.
 3. Project Settings → Data API → Exposed schemas: add `heladera`.
 4. Authentication → Add user (Auto Confirm User) for each person, unless they
    use an existing login. A Heladera login must not be in zona-fit's `gym_users`.

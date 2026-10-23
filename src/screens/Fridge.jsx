@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLoad } from '../lib/useLoad.js'
 import { loadFridge, finishItem, restoreItem, setExpiry } from '../lib/fridge.js'
+import { removeFromList } from '../lib/shopping.js'
 import { compareItems } from '../lib/freshness.js'
 import { todayISO } from '../lib/format.js'
 import { saveErrorMessage } from '../lib/errors.js'
@@ -32,17 +33,20 @@ export default function Fridge({ household }) {
   async function finish(item) {
     setItems((list) => list.filter((i) => i.product_id !== item.product_id))
     setOpenId(null)
+    let listed
     try {
-      await finishItem(item.product_id)
+      listed = await finishItem(item.product_id, today)
     } catch (error) {
       put(item)
       showToast(saveErrorMessage(error))
       return
     }
-    showToast(`${item.product.name}: se acabó`, async () => {
+    const message = listed ? `${item.product.name}: se acabó. Va a la lista.` : `${item.product.name}: se acabó`
+    showToast(message, async () => {
       put(item)
       try {
         await restoreItem(household.id, item)
+        if (listed) await removeFromList(item.product_id)
       } catch (error) {
         setItems((list) => list.filter((i) => i.product_id !== item.product_id))
         showToast(saveErrorMessage(error))

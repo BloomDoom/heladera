@@ -4,7 +4,9 @@ import { useLoad } from '../lib/useLoad.js'
 import { loadRecipePage, markCooked, undoCooked } from '../lib/today.js'
 import { setFavorite, deleteOwnRecipe } from '../lib/recipes.js'
 import { finishItem, restoreItem } from '../lib/fridge.js'
-import { todayISO } from '../lib/format.js'
+import { addRecipeToList, removeFromList, removeRecipeItems } from '../lib/shopping.js'
+import { listedMessage } from '../lib/shoppingList.js'
+import { plural, todayISO } from '../lib/format.js'
 import { recipeSteps } from '../lib/steps.js'
 import { readOwnSteps } from '../lib/ownRecipe.js'
 import { saveErrorMessage } from '../lib/errors.js'
@@ -22,6 +24,8 @@ export default function Recipe({ household }) {
   const [cookedId, setCookedId] = useState(null) // set once the dish is recorded
   const [saving, setSaving] = useState(false)
   const sending = useRef(false) // blocks a second tap before React re-renders
+  const listing = useRef(false) // same, for "Agregar lo que falta"
+  const [listingBusy, setListingBusy] = useState(false)
   const finishing = useRef(false) // same, for "Listo" / "Nada se acabó"
 
   // null until the first tap: until then the loaded value is shown.
@@ -100,6 +104,33 @@ export default function Recipe({ household }) {
     return list
   }
 
+  // Lists what the dish is missing. Names come from the recipe's own ingredients.
+  async function addMissing() {
+    if (listing.current) return
+    listing.current = true
+    setListingBusy(true)
+    try {
+      const ids = await addRecipeToList(recipe.id, todayISO())
+      if (ids.length === 0) {
+        showToast(`No falta nada más para ${recipe.title}`)
+      } else {
+        const names = ids.map((pid) => recipe.ingredients.find((i) => i.product_id === pid)?.product?.name).filter(Boolean)
+        showToast(listedMessage(names) ?? `A la lista: ${plural(ids.length, 'producto', 'productos')}`, async () => {
+          try {
+            await removeRecipeItems(recipe.id, ids)
+          } catch (error) {
+            showToast(saveErrorMessage(error))
+          }
+        })
+      }
+    } catch (error) {
+      showToast(saveErrorMessage(error))
+    } finally {
+      listing.current = false
+      setListingBusy(false)
+    }
+  }
+
   async function cook() {
     if (sending.current) return
     sending.current = true
@@ -127,12 +158,15 @@ export default function Recipe({ household }) {
     if (finishing.current) return
     finishing.current = true
     setSaving(true)
+    const today = todayISO()
     const finished = []
+    const listedIds = [] // finished items that went onto the shopping list
     let failed = false
     for (const item of chosen) {
       try {
-        await finishItem(item.product_id)
+        const listed = await finishItem(item.product_id, today)
         finished.push(item)
+        if (listed) listedIds.push(item.product_id)
       } catch (error) {
         failed = true
         console.error(saveErrorMessage(error), error)
@@ -148,6 +182,7 @@ export default function Recipe({ household }) {
       const results = await Promise.allSettled([
         undoCooked(recordedId),
         ...finished.map((item) => restoreItem(household.id, item)),
+        ...listedIds.map((id) => removeFromList(id)),
       ])
       const rejected = results.find((r) => r.status === 'rejected')
       if (rejected) showToast(saveErrorMessage(rejected.reason))
@@ -218,6 +253,9 @@ export default function Recipe({ household }) {
               {ingredientList(minor)}
             </>
           )}
+          <button className="btn-secondary recipe-list-btn" disabled={listingBusy} onClick={addMissing}>
+            Agregar lo que falta a la lista
+          </button>
           {steps.length > 0 && (
             <>
               <h2>Preparación</h2>

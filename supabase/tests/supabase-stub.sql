@@ -3,6 +3,8 @@
 -- In Supabase, auth.uid() reads the logged-in user from the request's
 -- token; here the tests set request.jwt.claim.sub by hand (see db.js).
 
+create publication supabase_realtime;
+
 create role anon nologin;
 create role authenticated nologin;
 
