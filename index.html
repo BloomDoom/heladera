@@ -5,14 +5,26 @@
     <!-- viewport-fit=cover lets the app use the whole screen, around the
          Dynamic Island and home indicator. The CSS adds safe padding. -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#0d0d10" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fbfbfa" />
+    <!-- Puts the saved theme (src/lib/theme.js) on the page before React
+         runs, so a dark phone never flashes white on open. -->
+    <script>
+      try {
+        var dark = localStorage.getItem('heladera-theme') === 'dark'
+      } catch (e) {}
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      if (dark) {
+        document.documentElement.style.colorScheme = 'dark'
+        document.querySelector('meta[name="theme-color"]').content = '#2b2e33'
+      }
+    </script>
 
     <!-- iPhone Home Screen app settings -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Heladera" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/png" href="/favicon.png" />
 
