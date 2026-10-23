@@ -106,7 +106,7 @@ export default function Fridge({ household }) {
         <>
           <div className="segmented">
             {PLACES.map((p) => (
-              <button key={p.key} aria-pressed={place === p.key} onClick={() => choose(p.key)}>
+              <button key={p.key} data-place={p.key} aria-pressed={place === p.key} onClick={() => choose(p.key)}>
                 {`${p.label} ${counts[p.key]}`}
               </button>
             ))}
@@ -120,7 +120,7 @@ export default function Fridge({ household }) {
               <p className="muted">Tocá Agregar para cargar lo que compraste.</p>
             </>
           ) : (
-            <ul className="fridge-list">
+            <ul className="fridge-list" data-place={place}>
               {sorted.map((item) => (
                 <FridgeItem
                   key={item.product_id}
