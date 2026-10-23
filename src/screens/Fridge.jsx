@@ -13,7 +13,7 @@ import FridgeItem, { MOVE_LABELS } from '../components/FridgeItem.jsx'
 
 let selectedPlace = 'fridge' // survives navigation while the app is open
 
-// What's in the fridge (and the pantry), most urgent first.
+// What's in the kitchen, one tab per place (fridge, freezer, pantry), most urgent first.
 export default function Fridge({ household }) {
   const navigate = useNavigate()
   const showToast = useToast()
@@ -68,7 +68,7 @@ export default function Fridge({ household }) {
   }
 
   async function move(item, to) {
-    setItems((list) => list.filter((i) => i.product_id !== item.product_id))
+    put({ ...item, place: to, added_on: today, expires_on: null })
     setOpenId(null)
     try {
       await moveItem(item.product_id, to, today)
@@ -113,9 +113,12 @@ export default function Fridge({ household }) {
           </div>
           <button className="btn-primary" onClick={() => navigate('/fridge/add')}>Agregar</button>
           {sorted.length === 0 ? (
-            <p className="empty fridge-empty">
-              {`No hay nada en ${label === 'freezer' ? 'el freezer' : `la ${label}`}.`}
-            </p>
+            <>
+              <p className="empty fridge-empty">
+                {`No hay nada en ${label === 'freezer' ? 'el freezer' : `la ${label}`}.`}
+              </p>
+              <p className="muted">Tocá Agregar para cargar lo que compraste.</p>
+            </>
           ) : (
             <ul className="fridge-list">
               {sorted.map((item) => (

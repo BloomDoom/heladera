@@ -175,7 +175,7 @@ export default function Recipe({ household }) {
     navigate('/', { replace: true })
     // One toast, with Undo even when some items could not be finished.
     const message = failed
-      ? 'Anotado, pero no se pudo sacar todo. Revisalo en Heladera.'
+      ? 'Anotado, pero no se pudo sacar todo. Revisalo en la cocina.'
       : `Anotado: ${recipe.title}`
     showToast(message, async () => {
       // Every step runs on its own, so one failure doesn't strand the rest.

@@ -77,7 +77,7 @@ export default function AddToFridge({ household }) {
       setSaving(false)
       return
     }
-    showToast(selected.size === 1 ? 'Listo, ya está en la heladera' : 'Listo, ya están en la heladera')
+    showToast(selected.size === 1 ? 'Listo, ya está en la cocina' : 'Listo, ya están en la cocina')
     navigate('/fridge', { replace: true })
   }
 

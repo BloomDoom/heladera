@@ -6,6 +6,8 @@
 // (Project Settings → API Keys → secret). The secret key skips Row Level
 // Security: it only lives on this computer, never in the app or the repo.
 //
+// Run after supabase/migrations/2026-10-27-cocina.sql (products may be stored in freezer); rebuild out/ with build.js first.
+//
 // Safe to run again: products and recipes are matched by code/source_key,
 // each recipe's ingredients are replaced, and base recipes that are no
 // longer in out/recipes.json are deleted.
