@@ -9,6 +9,7 @@ import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
 import LoadState from '../components/LoadState.jsx'
 import AssumedEditor from '../components/AssumedEditor.jsx'
+import ThemeSwitch from '../components/ThemeSwitch.jsx'
 
 // Basics, history, favorites and own recipes, loaded in parallel.
 async function loadMore() {
@@ -103,6 +104,8 @@ export default function More({ household }) {
           )}
         </>
       )}
+      <h2>Estilo</h2>
+      <ThemeSwitch />
       <button className="btn-secondary more-logout" onClick={signOut}>
         Cerrar sesión
       </button>

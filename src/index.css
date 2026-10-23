@@ -1,24 +1,82 @@
 /* ───────── Colors and sizes used everywhere. Change them here.
-   Base copied from zona-fit, with the green of the Heladera icon instead
-   of purple. The app is always dark. Text colors keep 4.5:1 contrast or
-   more on their backgrounds. */
-:root {
-  --bg: #0d0d10;           /* near-black page background */
-  --surface: #19191e;      /* cards */
-  --text: #f2f2f4;         /* near-white */
-  --muted: #a3a3ad;        /* secondary text (7:1 on the cards) */
-  --border: #34343d;
-  --primary: #17775f;      /* green: buttons (5.4:1 with white) */
-  --primary-ink: #7fdcc0;  /* green for text: links, active tab (10:1 on the cards) */
+   Two themes, picked in Más (src/lib/theme.js puts data-theme on <html>):
+   - light, "Puerta blanca": the white fridge door with magnets and notes.
+   - dark, "Pantalla": a dark-grey steel fridge with a display.
+   Text colors keep 4.5:1 contrast or more on their backgrounds; the test
+   src/lib/tests/contrast.test.js checks it. */
+:root,
+[data-theme='light'] {
+  --bg: #fbfbfa;           /* the white door */
+  --surface: #ffffff;      /* paper: cards, rows, fields */
+  --border: #d7dadd;
+  --text: #26292c;         /* marker black */
+  --muted: #5c6268;        /* secondary text */
+  --primary: #c03a2b;      /* tomato: main buttons */
   --primary-text: #ffffff;
-  --danger: #ff9b9b;       /* errors (text and outlines) */
-  --warn: #f5b942;         /* amber: "vence pronto" (9.9:1 on the cards) */
+  --primary-ink: #962b1f;  /* tomato for text: links, active things, focus */
+  --danger: #962b1f;       /* errors, "Venció" */
+  --warn: #8a5a00;         /* "Vence pronto" text */
+  --freezer: #3d5f8a;      /* blue magnet: things in the freezer */
+  --ok: #3e7b3a;           /* leaf green: all fine */
+  --note: #fff4b8;         /* yellow sticky note */
+  --note-ink: #3a3420;
+  --handle: #b9bec4;       /* the door handle on the right edge */
+  --handle-shade: #9aa0a6;
+  --handle-light: #e4e6e8;
+  --field-border: #868c93; /* edges of fields: 3:1 or more */
+  --tab-bg: #eef0f1;
+  --tab-active-bg: #26292c;
+  --tab-active-text: #ffffff;
+  --toast-bg: #26292c;
+  --toast-text: #ffffff;
+  --offline-bg: #b42318;   /* a deep red band */
+  --magnet: #c03a2b;       /* tomato magnet */
+  --magnet-shine: #e06a5c;
 
-  color-scheme: dark;
+  --font-ui: 'Rethink Sans Variable', -apple-system, system-ui, 'Segoe UI', sans-serif;
+  --font-note: 'Caveat Variable', 'Bradley Hand', cursive; /* handwriting */
+  --font-readout: var(--font-ui);
+
+  color-scheme: light;
 
   --tap: 48px;            /* minimum height of anything you can tap */
   --tab-bar-height: 64px;
-  --radius: 16px;         /* buttons and fields */
+  --radius: 14px;         /* buttons and fields */
+  --handle-room: 28px;    /* space kept free for the handle on the right */
+}
+
+[data-theme='dark'] {
+  --bg: #2b2e33;           /* dark-grey steel */
+  --surface: #1f2226;      /* dark glass panels */
+  --border: #3a3e44;
+  --text: #eef1f4;
+  --muted: #a9b1ba;
+  --primary: #c93b2e;      /* tomato button */
+  --primary-text: #ffffff;
+  --primary-ink: #ff8a7a;  /* tomato light, for text on the dark */
+  --danger: #ff8a7a;
+  --warn: #f5c96a;         /* amber readout */
+  --freezer: #8ccdff;      /* ice blue */
+  --ok: #8fd18a;
+  --note: #111316;         /* the display panel */
+  --note-ink: #eef1f4;
+  --handle: #1b1d20;       /* a flat handle sunk into the door */
+  --handle-shade: #3d4148;
+  --handle-light: #3d4148;
+  --field-border: #737a83;
+  --tab-bg: #1b1d20;
+  --tab-active-bg: #eef1f4;
+  --tab-active-text: #1b1d20;
+  --toast-bg: #eef1f4;
+  --toast-text: #1b1d20;
+  --offline-bg: #b42318;
+  --magnet: #ff6b57;       /* a lit red dot instead of a magnet */
+  --magnet-shine: #ff6b57;
+
+  --font-note: var(--font-ui);
+  --font-readout: 'Chakra Petch', var(--font-ui); /* the display's digits */
+
+  color-scheme: dark;
 }
 
 /* ───────── Text size + iOS Dynamic Type
@@ -43,10 +101,13 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  /* Nunito is bundled with the app (see main.jsx), so it works offline. */
-  font-family: 'Nunito Variable', -apple-system, system-ui, 'Segoe UI', sans-serif;
+  /* The fonts are bundled with the app (see main.jsx), so they work offline. */
+  font-family: var(--font-ui);
   font-size: 1.0625rem; /* 18px at the default iPhone text size */
   line-height: 1.45;
+  /* With the biggest iPhone text sizes a single word ("Verdulería") can be
+     wider than the screen: break it instead of running off the edge. */
+  overflow-wrap: anywhere;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
   /* Keep content out from under the Dynamic Island / status bar. */
@@ -55,8 +116,43 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
+/* The dark fridge is brushed steel: fine vertical lines. */
+[data-theme='dark'] body {
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 27px,
+    #30343a 27px 28px,
+    transparent 28px 61px,
+    #272a2e 61px 62px
+  );
+}
+
+/* The door handle, drawn on the right edge of every screen. On the white
+   door it is a grey bar; on the dark fridge, a flat one sunk into the steel. */
+body::after {
+  content: '';
+  position: fixed;
+  z-index: 5;
+  right: calc(env(safe-area-inset-right) + 8px);
+  top: 22dvh;
+  height: 44dvh;
+  width: 14px;
+  border-radius: 8px;
+  background: var(--handle);
+  box-shadow: inset -3px 0 0 var(--handle-shade), -2px 0 0 var(--handle-light);
+  pointer-events: none;
+}
+[data-theme='dark'] body::after {
+  width: 10px;
+  border-radius: 6px;
+  box-shadow: inset 1px 0 0 var(--handle-shade);
+}
+
 h1 {
   font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
   margin: 0.5rem 0 1rem;
 }
 
@@ -64,7 +160,10 @@ h1 {
 .screen {
   max-width: 40rem;
   margin: 0 auto;
-  padding: 1rem;
+  /* Side padding stops growing at 20px, so very big text keeps the room. */
+  padding: 1rem min(1rem, 20px);
+  /* Keeps everything clear of the door handle on the right. */
+  padding-right: calc(min(1rem, 20px) + var(--handle-room));
   /* Room so the last thing on the screen isn't hidden by the tab bar. */
   padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + 2rem);
 }
@@ -126,7 +225,7 @@ input {
 .btn-secondary {
   background: var(--surface);
   color: var(--primary-ink);
-  border: 2px solid var(--primary-ink);
+  border: 2px solid currentColor;
 }
 
 label {
@@ -141,7 +240,7 @@ input {
   min-height: var(--tap);
   margin-top: 0.35rem;
   padding: 0.6rem 0.75rem;
-  border: 2px solid var(--border);
+  border: 2px solid var(--field-border);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
@@ -168,11 +267,33 @@ input:focus {
 }
 
 .login-logo {
-  display: block;
-  width: 96px;
-  height: 96px;
-  margin: 0 auto 1rem;
-  border-radius: 22px;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 2.2rem;
+}
+
+/* ───────── Logo: the fridge mark and the name */
+.logo {
+  display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+}
+.logo-mark {
+  width: 1.15em;
+  height: 1.55em;
+  flex: none;
+}
+.logo-name {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+[data-theme='dark'] .logo-light,
+:root:not([data-theme='dark']) .logo-dark {
+  display: none;
 }
 
 /* ───────── Offline message */
@@ -180,8 +301,8 @@ input:focus {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: #b42318; /* a deep red: --danger is light, made for text */
-  color: #fff;
+  background: var(--offline-bg);
+  color: var(--primary-text);
   padding: 0.75rem 1rem;
   text-align: center;
   font-weight: 600;
@@ -195,7 +316,7 @@ input:focus {
   bottom: 0;
   z-index: 10;
   display: flex;
-  background: var(--surface);
+  background: var(--tab-bg);
   border-top: 1px solid var(--border);
   /* Stay above the iPhone's home indicator bar. */
   padding-bottom: env(safe-area-inset-bottom);
@@ -230,9 +351,17 @@ input:focus {
   stroke-linejoin: round;
 }
 
-/* NavLink adds the "active" class to the current tab. */
+/* NavLink adds the "active" class to the current tab: it gets a pill
+   behind its icon, like a magnet on the door. */
 .tab.active {
-  color: var(--primary-ink);
+  color: var(--text);
+}
+.tab.active svg {
+  width: 52px;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
 }
 
 /* ───────── Loading errors */
@@ -259,9 +388,14 @@ input:focus-visible {
 }
 
 @media (prefers-contrast: more) {
-  :root {
-    --muted: #d4d4da;
-    --border: #6b6b76;
+  :root,
+  [data-theme='light'] {
+    --muted: #3f444a;
+    --border: #9aa0a6;
+  }
+  [data-theme='dark'] {
+    --muted: #d4d9de;
+    --border: #6b7078;
   }
 }
 
@@ -285,18 +419,18 @@ input:focus-visible {
   gap: 1rem;
   padding: 0.5rem 0.5rem 0.5rem 1rem;
   min-height: 56px;
-  background: #2e2e36; /* a lighter grey, so it stands out from the black page */
-  color: #fff;
+  background: var(--toast-bg);
+  color: var(--toast-text);
   border-radius: var(--radius);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
 }
 .toast button {
   min-height: var(--tap);
   padding: 0 1rem;
   background: none;
-  border: 2px solid #fff;
+  border: 2px solid currentColor;
   border-radius: 8px;
-  color: #fff;
+  color: var(--toast-text);
   font-weight: 700;
   cursor: pointer;
 }
@@ -327,6 +461,72 @@ input:focus-visible {
 }
 .fridge-actions .btn-secondary {
   margin-top: 0.5rem;
+}
+
+/* Cocina's three places look like three doors, each with its own tone:
+   the fridge white (or glass), the freezer cold blue, the pantry light
+   wood. The open one stands out with a dark frame. The rows of a place
+   take its tone too. */
+.fridge-screen .segmented {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.4rem;
+  padding: 0;
+  background: none;
+  border: none;
+}
+.fridge-screen .segmented button {
+  position: relative;
+  min-height: 3.5rem;
+  padding: 0.5rem 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 12px 12px 6px 6px;
+  background: var(--place-tone, var(--surface));
+  color: var(--place-ink, var(--text));
+  /* Three doors share the width, so their labels stop growing at 19px
+     (like the tab bar), or "Alacena" would not fit with big text. */
+  font-size: min(1rem, 19px);
+}
+/* A small handle across the top of each door. */
+.fridge-screen .segmented button::after {
+  content: '';
+  position: absolute;
+  top: 0.4rem;
+  left: 50%;
+  width: 1.5rem;
+  height: 4px;
+  margin-left: -0.75rem;
+  border-radius: 2px;
+  background: var(--handle-shade);
+}
+.fridge-screen .segmented + .btn-primary {
+  margin-top: 0.75rem;
+}
+.fridge-screen .segmented button[aria-pressed='true'] {
+  min-height: 4rem;
+  background: var(--place-tone, var(--surface));
+  color: var(--place-ink, var(--text));
+  border: 2px solid var(--text);
+  box-shadow: 0 6px 12px -8px rgba(0, 0, 0, 0.45);
+}
+[data-place='freezer'] {
+  --place-tone: #e6edf5;
+  --place-ink: #3d5f8a;
+}
+[data-place='pantry'] {
+  --place-tone: #f1e3cf;
+  --place-ink: #5a3a20;
+}
+[data-theme='dark'] [data-place='freezer'] {
+  --place-tone: #1d2630;
+  --place-ink: #8ccdff;
+}
+[data-theme='dark'] [data-place='pantry'] {
+  --place-tone: #2a241d;
+  --place-ink: #e8c9a0;
+}
+.fridge-list[data-place] .fridge-item {
+  background: var(--place-tone, var(--surface));
 }
 
 .fridge-empty,
@@ -383,7 +583,7 @@ input:focus-visible {
   color: var(--danger);
 }
 .chip-ok {
-  color: var(--primary-ink);
+  color: var(--ok);
 }
 
 /* "Buscar receta": results reuse the history rows, with the title on top
@@ -465,7 +665,7 @@ select {
   min-height: var(--tap);
   margin-top: 0.35rem;
   padding: 0.6rem 0.75rem;
-  border: 2px solid var(--border);
+  border: 2px solid var(--field-border);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
@@ -590,18 +790,69 @@ select {
 }
 
 /* ───────── Hoy */
+.today-logo {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 1.4rem;
+}
+
+/* The dish card. On the white door: a paper card held by a tomato magnet,
+   a little crooked. It uses "rotate", not "transform": SuggestionCard sets
+   an inline transform while it is being swiped. On the dark fridge: a
+   glass panel. */
+.suggestion {
+  margin-top: 1.5rem;
+}
 .suggestion-card {
-  padding: 1.25rem 1rem;
+  position: relative;
+  padding: 1.5rem 1.1rem 1.1rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 4px;
+  rotate: -1.2deg;
+  box-shadow: 0 10px 18px -14px rgba(38, 41, 44, 0.55);
   touch-action: pan-y; /* vertical scroll still works; horizontal drags are ours */
   user-select: none;
   -webkit-user-select: none;
 }
+.suggestion-card::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  margin-left: -15px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--magnet-shine) 0 4px, var(--magnet) 5px);
+  box-shadow: 0 3px 4px rgba(38, 41, 44, 0.35);
+}
+[data-theme='dark'] .suggestion-card {
+  border-radius: 18px;
+  rotate: none;
+  box-shadow: none;
+}
+[data-theme='dark'] .suggestion-card::before {
+  display: none;
+}
 .suggestion-card h2 {
   margin: 0 0 0.5rem;
   font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.suggestion-reason-freezer {
+  color: var(--freezer);
+  font-weight: 600;
+}
+[data-theme='dark'] .suggestion-reason-freezer::before {
+  content: '';
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: #7cc4ff;
+  box-shadow: 0 0 8px #7cc4ff;
 }
 .suggestion-card p {
   margin: 0 0 0.5rem;
@@ -640,6 +891,97 @@ select {
   }
 }
 
+/* "Vence pronto" on Hoy. On the white door: a yellow sticky note in
+   handwriting, held with tape. On the dark fridge: its display, with a lit
+   dot per thing (red: already over, amber: soon). */
+.soon-note {
+  position: relative;
+  margin: 0.5rem 0 1.5rem;
+  padding: 1.1rem 1rem 0.9rem;
+  background: var(--note);
+  color: var(--note-ink);
+  font-family: var(--font-note);
+}
+.soon-note h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.soon-note ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 1.45rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+:root:not([data-theme='dark']) .soon-note {
+  width: fit-content;
+  min-width: 60%;
+  max-width: 100%;
+  rotate: -1.5deg;
+  box-shadow: 0 8px 14px -12px rgba(38, 41, 44, 0.6);
+}
+/* The tape strip on top. */
+:root:not([data-theme='dark']) .soon-note::before {
+  content: '';
+  position: absolute;
+  top: -0.5rem;
+  left: 50%;
+  width: 3rem;
+  height: 1rem;
+  margin-left: -1.5rem;
+  background: rgba(205, 210, 214, 0.75);
+}
+[data-theme='dark'] .soon-note {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: inset 0 0 0 4px #1a1c20;
+}
+[data-theme='dark'] .soon-note h2 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+[data-theme='dark'] .soon-note ul {
+  font-size: 1rem;
+}
+[data-theme='dark'] .soon-note li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.25rem;
+  border-bottom: 1px solid #262a2f;
+}
+[data-theme='dark'] .soon-note li:last-child {
+  border-bottom: none;
+}
+[data-theme='dark'] .soon-note li > span {
+  min-width: 0;
+}
+[data-theme='dark'] .soon-note li::before {
+  content: '';
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f5b942;
+}
+[data-theme='dark'] .soon-note li[data-status='over']::before {
+  background: var(--magnet);
+  box-shadow: 0 0 8px var(--magnet);
+}
+[data-theme='dark'] .soon-when {
+  margin-left: auto;
+  font-family: var(--font-readout);
+  font-weight: 600;
+  color: var(--warn);
+}
+[data-theme='dark'] li[data-status='over'] .soon-when {
+  color: var(--danger);
+}
+
 /* ───────── Receta */
 .recipe-screen {
   /* Room for the bar with "Lo cocinamos" above the tab bar. */
@@ -658,10 +1000,39 @@ select {
   margin: 0;
 }
 .recipe-title {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.75rem 0.5rem 0.25rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  rotate: -0.8deg;
+}
+.recipe-title h1 {
+  margin: 0.5rem 0;
+}
+/* The recipe card hangs from a tomato magnet, like the dish on Hoy. */
+.recipe-title::before {
+  content: '';
+  position: absolute;
+  top: -13px;
+  left: 1.5rem;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--magnet-shine) 0 3px, var(--magnet) 4px);
+  box-shadow: 0 3px 4px rgba(38, 41, 44, 0.35);
+}
+[data-theme='dark'] .recipe-title {
+  border-radius: 18px;
+  rotate: none;
+}
+[data-theme='dark'] .recipe-title::before {
+  display: none;
 }
 .favorite-btn {
   flex: none;
@@ -686,11 +1057,12 @@ select {
   margin-bottom: 0.25rem;
 }
 .recipe-missing {
-  color: var(--warn);
+  color: var(--danger);
   font-weight: 600;
 }
-/* One card per step, with its number in a green circle, so you can find
-   your place again while cooking. */
+/* One block per step, with its number in a tomato circle, so you can find
+   your place again while cooking. On the white door the steps are written on
+   lined paper; on the dark fridge each one is a glass panel. */
 .recipe-steps {
   list-style: none;
   margin: 0;
@@ -698,6 +1070,30 @@ select {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+:root:not([data-theme='dark']) .recipe-steps {
+  gap: 0;
+  padding: 0.25rem 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+:root:not([data-theme='dark']) .recipe-steps li {
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+/* A ruled line under every line of text, like a notebook page. */
+:root:not([data-theme='dark']) .recipe-steps p {
+  line-height: 1.7;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(1.7em - 1px),
+    var(--border) calc(1.7em - 1px) 1.7em
+  );
+}
+[data-theme='dark'] .step-number {
+  font-family: var(--font-readout);
 }
 .recipe-steps li {
   display: flex;
@@ -789,6 +1185,9 @@ select {
   font-size: 1.2rem;
   margin: 1.5rem 0 0.5rem;
 }
+.theme-switch {
+  grid-template-columns: repeat(2, 1fr);
+}
 .more-logout {
   margin-top: 2rem;
 }
@@ -861,7 +1260,7 @@ textarea {
   width: 100%;
   margin-top: 0.35rem;
   padding: 0.6rem 0.75rem;
-  border: 2px solid var(--border);
+  border: 2px solid var(--field-border);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
@@ -957,14 +1356,61 @@ textarea:focus {
 
 /* ───────── Compras */
 .shop-add { margin-bottom: 1rem; }
-.shop-group { margin: 1.25rem 0 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.shop-group { margin: 1.25rem 0 0.5rem; font-size: 0.95rem; font-weight: 600; color: var(--muted); }
 .shop-list { list-style: none; margin: 0; padding: 0; }
-.shop-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; padding: 0 0.75rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
-.shop-tick { display: flex; flex: 1; align-items: center; gap: 0.75rem; min-height: var(--tap); padding: 0.4rem 0; cursor: pointer; }
-.shop-tick input { flex: none; width: 1.5rem; height: 1.5rem; margin: 0; accent-color: var(--primary); }
+.shop-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; padding: 0 0.75rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.shop-tick { display: flex; flex: 1 1 60%; align-items: center; gap: min(0.75rem, 14px); min-height: var(--tap); padding: 0.4rem 0; cursor: pointer; }
+.shop-tick input { flex: none; width: min(1.5rem, 32px); height: min(1.5rem, 32px); margin: 0; accent-color: var(--primary); }
 .shop-name, .shop-reason { display: block; }
+.shop-tick > span { min-width: 0; }
 .shop-reason { font-size: 0.85rem; }
 .shop-row-done .shop-name { text-decoration: line-through; color: var(--muted); }
+
+/* On the white door the list is written by hand on paper notes held with
+   tape, and a ticked thing gets crossed out with the red marker. */
+:root:not([data-theme='dark']) .shop-list {
+  position: relative;
+  padding: 0.9rem min(0.75rem, 14px) 0.4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 10px 18px -16px rgba(38, 41, 44, 0.6);
+}
+:root:not([data-theme='dark']) .shop-list::before {
+  content: '';
+  position: absolute;
+  top: -0.5rem;
+  left: 50%;
+  width: 3rem;
+  height: 1rem;
+  margin-left: -1.5rem;
+  background: rgba(205, 210, 214, 0.75);
+}
+:root:not([data-theme='dark']) .shop-row {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+}
+:root:not([data-theme='dark']) .shop-row:last-child {
+  border-bottom: none;
+}
+:root:not([data-theme='dark']) .shop-name,
+:root:not([data-theme='dark']) .shop-group {
+  font-family: var(--font-note);
+  font-size: 1.45rem;
+  line-height: 1.15;
+}
+:root:not([data-theme='dark']) .shop-group {
+  font-weight: 700;
+  color: var(--text);
+}
+:root:not([data-theme='dark']) .shop-row-done .shop-name {
+  text-decoration-thickness: 0.18em;
+  text-decoration-color: var(--primary);
+}
 .shop-remove { margin: 0; min-width: var(--tap); }
 .shop-list + .btn-primary { margin-top: 0.75rem; }
 .shop-week { display: inline-block; margin-top: 1rem; }

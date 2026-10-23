@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { freshness, freshnessText, compareItems, comparePantry, freezerText, FREEZER_DAYS } from '../freshness.js'
+import { freshness, freshnessText, compareItems, comparePantry, freezerText, soonItems, FREEZER_DAYS } from '../freshness.js'
 
 const item = (name, shelf_days, added_on, expires_on = null) => ({
   product_id: name,
@@ -110,4 +110,41 @@ test('freezerText joins names', () => {
 test('freezer item keeps its hand-set date', () => {
   const f = freshness({ ...item('pollo', 3, '2026-10-01', '2026-11-15'), place: 'freezer' }, '2026-10-23')
   assert.equal(f.expiresOn, '2026-11-15')
+})
+
+test('soonItems lists soon and over items, most urgent first', () => {
+  const today = '2026-10-23'
+  const list = soonItems(
+    [
+      item('Tomate', 5, '2026-10-19'), // due tomorrow
+      item('Queso', 20, '2026-10-20'), // fine
+      item('Leche', 5, '2026-10-17'), // over since yesterday
+    ],
+    today,
+  )
+  assert.deepEqual(list, [
+    { name: 'Leche', when: 'venció ayer', status: 'over' },
+    { name: 'Tomate', when: 'mañana', status: 'soon' },
+  ])
+})
+
+test('soonItems shortens the other warnings for the note', () => {
+  const today = '2026-10-23'
+  const list = soonItems([item('Pan', 2, '2026-10-21'), item('Yogur', 5, '2026-10-20')], today)
+  assert.deepEqual(list.map((s) => s.when), ['hoy', 'en 2 días'])
+})
+
+test('soonItems counts the freezer by its own dates', () => {
+  const today = '2026-10-23'
+  assert.deepEqual(soonItems([placed('Pollo', 2, '2026-10-20', 'freezer')], today), [])
+})
+
+test('soonItems keeps at most max', () => {
+  const today = '2026-10-23'
+  const many = ['A', 'B', 'C', 'D', 'E'].map((n) => item(n, 1, '2026-10-22'))
+  assert.equal(soonItems(many, today, 3).length, 3)
+})
+
+test('soonItems is empty when nothing is close', () => {
+  assert.deepEqual(soonItems([item('Queso', 20, '2026-10-20')], '2026-10-23'), [])
 })

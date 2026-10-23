@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase.js'
-import { asset } from '../lib/asset.js'
+import Logo from '../components/Logo.jsx'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -29,7 +29,9 @@ export default function Login() {
 
   return (
     <main className="screen login">
-      <img className="login-logo" src={asset('icon-512.png')} alt="Heladera" />
+      <div className="login-logo">
+        <Logo />
+      </div>
       <h1>¡Hola de nuevo!</h1>
       <form onSubmit={handleSubmit}>
         <label>
