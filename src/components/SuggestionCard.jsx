@@ -84,7 +84,13 @@ export default function SuggestionCard({ suggestion, onSkip, onOpen, openLabel =
         <h2>{suggestion.title}</h2>
         {suggestion.minutes != null && <p className="muted">{`${suggestion.minutes} min`}</p>}
         {suggestion.reasons.map((reason) => (
-          <p key={reason} className="suggestion-reason">{reason}</p>
+          // The freezer line gets the freezer's blue (see freezerText).
+          <p
+            key={reason}
+            className={`suggestion-reason${reason.endsWith('en el freezer') ? ' suggestion-reason-freezer' : ''}`}
+          >
+            {reason}
+          </p>
         ))}
         {suggestion.missing && <span className="chip chip-soon">{suggestion.missing}</span>}
       </div>

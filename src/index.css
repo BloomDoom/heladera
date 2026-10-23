@@ -716,18 +716,69 @@ select {
 }
 
 /* ───────── Hoy */
+.today-logo {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 1.4rem;
+}
+
+/* The dish card. On the white door: a paper card held by a tomato magnet,
+   a little crooked. It uses "rotate", not "transform": SuggestionCard sets
+   an inline transform while it is being swiped. On the dark fridge: a
+   glass panel. */
+.suggestion {
+  margin-top: 1.5rem;
+}
 .suggestion-card {
-  padding: 1.25rem 1rem;
+  position: relative;
+  padding: 1.5rem 1.1rem 1.1rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 4px;
+  rotate: -1.2deg;
+  box-shadow: 0 10px 18px -14px rgba(38, 41, 44, 0.55);
   touch-action: pan-y; /* vertical scroll still works; horizontal drags are ours */
   user-select: none;
   -webkit-user-select: none;
 }
+.suggestion-card::before {
+  content: '';
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  margin-left: -15px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--magnet-shine) 0 4px, var(--magnet) 5px);
+  box-shadow: 0 3px 4px rgba(38, 41, 44, 0.35);
+}
+[data-theme='dark'] .suggestion-card {
+  border-radius: 18px;
+  rotate: none;
+  box-shadow: none;
+}
+[data-theme='dark'] .suggestion-card::before {
+  display: none;
+}
 .suggestion-card h2 {
   margin: 0 0 0.5rem;
   font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.suggestion-reason-freezer {
+  color: var(--freezer);
+  font-weight: 600;
+}
+[data-theme='dark'] .suggestion-reason-freezer::before {
+  content: '';
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: #7cc4ff;
+  box-shadow: 0 0 8px #7cc4ff;
 }
 .suggestion-card p {
   margin: 0 0 0.5rem;
@@ -872,10 +923,39 @@ select {
   margin: 0;
 }
 .recipe-title {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.75rem 0.5rem 0.25rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  rotate: -0.8deg;
+}
+.recipe-title h1 {
+  margin: 0.5rem 0;
+}
+/* The recipe card hangs from a tomato magnet, like the dish on Hoy. */
+.recipe-title::before {
+  content: '';
+  position: absolute;
+  top: -13px;
+  left: 1.5rem;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--magnet-shine) 0 3px, var(--magnet) 4px);
+  box-shadow: 0 3px 4px rgba(38, 41, 44, 0.35);
+}
+[data-theme='dark'] .recipe-title {
+  border-radius: 18px;
+  rotate: none;
+}
+[data-theme='dark'] .recipe-title::before {
+  display: none;
 }
 .favorite-btn {
   flex: none;
@@ -900,11 +980,12 @@ select {
   margin-bottom: 0.25rem;
 }
 .recipe-missing {
-  color: var(--warn);
+  color: var(--danger);
   font-weight: 600;
 }
-/* One card per step, with its number in a green circle, so you can find
-   your place again while cooking. */
+/* One block per step, with its number in a tomato circle, so you can find
+   your place again while cooking. On the white door the steps are written on
+   lined paper; on the dark fridge each one is a glass panel. */
 .recipe-steps {
   list-style: none;
   margin: 0;
@@ -912,6 +993,30 @@ select {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+:root:not([data-theme='dark']) .recipe-steps {
+  gap: 0;
+  padding: 0.25rem 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+:root:not([data-theme='dark']) .recipe-steps li {
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+/* A ruled line under every line of text, like a notebook page. */
+:root:not([data-theme='dark']) .recipe-steps p {
+  line-height: 1.7;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(1.7em - 1px),
+    var(--border) calc(1.7em - 1px) 1.7em
+  );
+}
+[data-theme='dark'] .step-number {
+  font-family: var(--font-readout);
 }
 .recipe-steps li {
   display: flex;

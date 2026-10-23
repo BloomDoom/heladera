@@ -9,6 +9,7 @@ import { saveErrorMessage } from '../lib/errors.js'
 import { useToast } from '../components/Toast.jsx'
 import LoadState from '../components/LoadState.jsx'
 import SuggestionCard from '../components/SuggestionCard.jsx'
+import Logo from '../components/Logo.jsx'
 
 const STALE_MS = 30 * 60 * 1000 // away longer than this: the suggestions are old
 
@@ -64,6 +65,9 @@ export default function Today({ household }) {
 
   return (
     <main className="screen">
+      <div className="today-logo">
+        <Logo />
+      </div>
       <h1>¿Qué comemos hoy?</h1>
       <Link to="/search" className="link-button today-search">Buscar receta</Link>
       <LoadState {...load} />
